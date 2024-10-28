@@ -6,7 +6,10 @@ Seja bem-vindo ao repositório destinado à documentação e suporte da ferramen
 
 O código-fonte da ferramenta encontra-se em desenvolvimento e será disponibilizado em breve.
 
-Neste repositório encontram-se páginas de ajuda à utilização da ferramenta em nossa _wiki_, bem como exemplos práticos de sua aplicação.
+Neste repositório encontram-se páginas de ajuda à utilização da ferramenta em nossa [_wiki_](https://github.com/lucasmarcos/ferramenta-fork-join/wiki), bem como exemplos práticos de sua aplicação.
+
+
+Convidamos você a participar de nosso [fórum de discussões](https://github.com/lucasmarcos/ferramenta-fork-join/discussions).
 
 Além disso, é possível contribuir com o desenvolvimento da ferramenta por meio dos templates de issues disponíveis para melhorias, sugestões e problemas.
 
@@ -23,7 +26,7 @@ Para contribuir com o projeto, você precisa:
   - Certifique-se de estar conectado antes de prosseguir
 
 3. Usar os templates de issues
-  - Acesse a aba "Issues" deste repositório
+  - Acesse a aba ["Issues"](https://github.com/lucasmarcos/ferramenta-fork-join/issues) deste repositório
   - Clique em "New Issue"
   - Escolha entre os templates disponíveis:
     - Template de Sugestão: para propor melhorias
