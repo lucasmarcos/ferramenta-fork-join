@@ -3,8 +3,11 @@
 ## Bem-vindo
 
 Seja bem-vindo ao repositório destinado à documentação e suporte da ferramenta educacional para o ensino do modelo de programação fork-join.
+
 O código-fonte da ferramenta encontra-se em desenvolvimento e será disponibilizado em breve.
-Neste repositório encontram-se páginas de ajuda à utilização da ferramenta em nossa wiki, bem como exemplos práticos de sua aplicação.
+
+Neste repositório encontram-se páginas de ajuda à utilização da ferramenta em nossa _wiki_, bem como exemplos práticos de sua aplicação.
+
 Além disso, é possível contribuir com o desenvolvimento da ferramenta por meio dos templates de issues disponíveis para melhorias, sugestões e problemas.
 
 ## Como colaborar
