@@ -2,7 +2,7 @@
 name: Problema
 about: Descreva seu problema para nos ajudar a melhorar
 title: ''
-labels: problema
+labels: bug
 assignees: ''
 ---
 
