@@ -33,3 +33,5 @@ Para contribuir com o projeto, você precisa:
     - Template de Problema: para reportar bugs ou dificuldades
   - Preencha todos os campos solicitados
   - Submeta sua contribuição
+
+Se achar mais fácil, vocẽ pode repoder esse [formulãrio](https://forms.gle/3KxN6ryCwAkZx4Kp9).
