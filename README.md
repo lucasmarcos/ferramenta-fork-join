@@ -18,7 +18,7 @@ Além disso, é possível contribuir com o desenvolvimento da ferramenta por mei
 Para contribuir com o projeto, você precisa:
 
 1. Ter uma conta no GitHub
-  - Acesse github.com e crie sua conta gratuitamente
+  - Acesse [github.com](https://github.com) e crie sua conta gratuitamente
   - Verifique seu email
 
 2. Estar logado na sua conta GitHub
