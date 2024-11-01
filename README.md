@@ -34,4 +34,4 @@ Para contribuir com o projeto, você precisa:
   - Preencha todos os campos solicitados
   - Submeta sua contribuição
 
-Se achar mais fácil, vocẽ pode repoder esse [formulãrio](https://forms.gle/3KxN6ryCwAkZx4Kp9).
+Se achar mais fácil, você pode responder esse [formulário](https://forms.gle/3KxN6ryCwAkZx4Kp9).
