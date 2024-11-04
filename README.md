@@ -13,6 +13,12 @@ Convidamos você a participar de nosso [fórum de discussões](https://github.co
 
 Além disso, é possível contribuir com o desenvolvimento da ferramenta por meio dos templates de issues disponíveis para melhorias, sugestões e problemas.
 
+## Formulário de Avalição
+
+Queremos saber sua opinião sobre a ferramenta! Suas respostas nos ajudarão a entender o que está funcionando bem, o que pode ser melhorado e como podemos tornar seu aprendizado melhor.
+
+O fomulário de avaliação se encontra [aqui](https://forms.gle/2VSo7CMLbfwq6uFe6).
+
 ## Como colaborar
 
 Para contribuir com o projeto, você precisa:
