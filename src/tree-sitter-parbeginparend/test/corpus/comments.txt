@@ -1,0 +1,42 @@
+===
+first
+===
+// exemplo de programa parbegin/parend
+
+BEGIN // begin sequencial
+  P1; // chamada a P1
+
+  PARBEGIN // begin paralelo
+    P3; // chamada a P3
+
+    BEGIN // begin sequencial
+      P2; // chamada a P2
+      P4; // chamada a P4
+
+      PARBEGIN // begin paralelo
+        P5; // chamada a P5
+        P6; // chamada a P6
+      PAREND // end paralelo
+    END // end sequencial
+  PAREND // end paralelo
+
+  P7; // chamada P7
+END // end sequencial
+
+---
+(source_file
+  (begin)
+  (call (label))
+  (parbegin)
+  (call (label))
+  (begin)
+  (call (label))
+  (call (label))
+  (parbegin)
+  (call (label))
+  (call (label))
+  (parend)
+  (end)
+  (parend)
+  (call (label))
+  (end))

@@ -1,0 +1,27 @@
+===
+ebook1
+===
+VAR_J = 2;
+C1;
+FORK ROT_C3;
+C2;
+JOIN VAR_J, ROT_C4, QUIT;
+
+ROT_C3:
+  C3;
+  JOIN VAR_J, ROT_C4, QUIT;
+
+ROT_C4:
+  C4;
+---
+(source_file
+  (assign (label) (digit))
+  (call (label))
+  (fork (label))
+  (call (label))
+  (join (label) (label) (label))
+  (def (label))
+  (call (label))
+  (join (label) (label) (label))
+  (def (label))
+  (call (label)))

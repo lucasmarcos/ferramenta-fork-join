@@ -1,0 +1,9 @@
+falta ponto e virgula
+chamada não existe
+chamada circular
+quit
+chamadas a mesma função (C1; C1;)
+quit QUIT qUiT
+
+START: collapse block
+main: default name

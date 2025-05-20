@@ -1,0 +1,42 @@
+===
+ebook3
+===
+VAR_D=2;
+VAR_E=2;
+
+A;
+FORK ROT_C;
+B;
+FORK ROT_E';
+JOIN VAR_D, ROT_D, QUIT;
+
+ROT_C: C;
+  JOIN VAR_D, ROT_D, QUIT;
+
+ROT_D: D;
+  JOIN VAR_E , ROT_E , QUIT ;
+
+ROT_E': JOIN VAR_E, ROT_E, QUIT;
+
+ROT_E: E;
+  QUIT;
+---
+(source_file
+  (assign (label) (digit))
+  (assign (label) (digit))
+  (call (label))
+  (fork (label))
+  (call (label))
+  (fork (label))
+  (join (label) (label) (label))
+  (def (label))
+  (call (label))
+  (join (label) (label) (label))
+  (def (label))
+  (call (label))
+  (join (label) (label) (label))
+  (def (label))
+  (join (label) (label) (label))
+  (def (label))
+  (call (label))
+  (call (label)))

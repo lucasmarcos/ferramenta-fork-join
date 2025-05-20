@@ -1,0 +1,12 @@
+===
+separado
+===
+VAR
+=
+2
+// comentario
+;
+---
+(source_file
+  (assign (label) (digit))
+  (comment))

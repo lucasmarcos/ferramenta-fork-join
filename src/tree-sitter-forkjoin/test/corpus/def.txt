@@ -1,0 +1,6 @@
+===
+def
+===
+l:
+---
+(source_file (def (label)))

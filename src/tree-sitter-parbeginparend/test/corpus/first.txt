@@ -1,0 +1,35 @@
+===
+first
+===
+BEGIN
+  P1;
+  PARBEGIN
+    P3;
+    BEGIN
+      P2;
+      P4;
+      PARBEGIN
+        P5;
+        P6;
+      PAREND
+    END
+  PAREND
+  P7;
+END
+---
+(source_file
+  (begin)
+  (call (label))
+  (parbegin)
+  (call (label))
+  (begin)
+  (call (label))
+  (call (label))
+  (parbegin)
+  (call (label))
+  (call (label))
+  (parend)
+  (end)
+  (parend)
+  (call (label))
+  (end))

@@ -1,0 +1,20 @@
+VAR_B = 2;
+VAR_C =2;
+
+y = read ();
+FORK ROT_R;
+FORK ROT_S;
+a = y * y;
+JOIN VAR_C, ROT_C, QUIT;
+
+ROT_R: r = y + 20;
+  JOIN VAR_B, ROT_B, QUIT;
+
+ROT_S: s = y − 10;
+  JOIN VAR_B, ROT_B, QUIT;
+
+ROT_B: b = r * s;
+  JOIN VAR_C, ROT_C, QUIT;
+
+ROT_C : c = a − b;
+  QUIT;

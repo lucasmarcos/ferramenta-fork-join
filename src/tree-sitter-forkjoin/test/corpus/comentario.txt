@@ -1,0 +1,17 @@
+===
+comentario
+===
+C1; // linha 1
+FORK C2; // linha 2
+C3; // linha 3
+JOIN C2, C3, C4; // linha 4
+---
+(source_file
+  (call (label))
+  (comment)
+  (fork (label))
+  (comment)
+  (call (label))
+  (comment)
+  (join (label) (label) (label))
+  (comment))

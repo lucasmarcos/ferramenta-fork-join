@@ -1,0 +1,11 @@
+A;
+FORK ROT_C;
+JOIN VAR_C, ROT_D, QUIT;
+
+ROT_C:
+  C;
+  JOIN VAR_C, ROT_D, QUIT;
+
+ROT_D:
+  D;
+

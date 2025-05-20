@@ -1,0 +1,6 @@
+===
+join
+===
+JOIN l1, l2, l3;
+---
+(source_file (join (label) (label) (label)))

@@ -1,0 +1,22 @@
+@top Program { command* }
+
+command { Fork | Join | Def | Call | Assign }
+
+Fork { @specialize<Label, "FORK"> Label ";" }
+
+Join { @specialize<Label, "JOIN"> Label "," Label "," Label ";" }
+
+Def { Label ":" }
+
+Call { Label ";" }
+
+Assign { Label "=" Number ";" }
+
+@skip { space | comment }
+
+@tokens {
+  Label { (@asciiLetter | "_") (@asciiLetter | @digit | "_" | "'")* }
+  Number { @digit+ }
+  space { @whitespace+ }
+  comment { "//" ![\n]* }
+}

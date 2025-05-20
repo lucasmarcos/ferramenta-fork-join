@@ -1,0 +1,3 @@
+wrong assign
+join var value
+call full block

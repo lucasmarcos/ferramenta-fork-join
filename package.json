@@ -1,0 +1,32 @@
+{
+  "type": "module",
+  "packageManager": "npm@11.3.0+sha512.96eb611483f49c55f7fa74df61b588de9e213f80a256728e6798ddc67176c7b07e4a1cfc7de8922422cbce02543714367037536955221fa451b0c4fefaf20c66",
+  "dependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@lezer/generator": "^1.7.3",
+    "@lezer/highlight": "^1.2.1",
+    "@lezer/lr": "^1.4.2",
+    "@tailwindcss/cli": "^4.1.6",
+    "@types/emscripten": "^1.40.1",
+    "@types/node": "^22.15.17",
+    "codemirror": "^6.0.1",
+    "cytoscape": "^3.32.0",
+    "cytoscape-dagre": "^2.5.0",
+    "esbuild": "^0.25.4",
+    "graphviz-wasm": "^3.0.2",
+    "thememirror": "^2.0.1",
+    "typescript": "^5.8.3",
+    "web-tree-sitter": "^0.25.4"
+  },
+  "scripts": {
+    "prepare": "cp node_modules/web-tree-sitter/tree-sitter.wasm web/",
+    "build:lezer": "lezer-generator src/forkjoin.grammar -o out/forkJoinParser.js && lezer-generator src/parbeginparend/parbeginparend.grammar -o out/parBeginParEndParser.js",
+    "build:css": "tailwindcss -i src/index.css -o web/index.css",
+    "build:js": "tsc",
+    "watch:js": "tsc --watch",
+    "watch": "esbuild --watch --bundle --sourcemap=inline --external:fs --external:path --external:module out/main.js --outfile=web/main.js",
+    "bundle": "esbuild --bundle --minify --external:fs --external:path --external:module out/main.js --outfile=web/main.js",
+    "lint": "biome check --write src test biome.json package-lock.json package.json tsconfig.json",
+    "test": "node --test"
+  }
+}

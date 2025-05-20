@@ -1,0 +1,6 @@
+===
+call
+===
+l;
+---
+(source_file (call (label)))

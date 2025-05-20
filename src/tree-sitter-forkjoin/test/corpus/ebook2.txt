@@ -1,0 +1,44 @@
+===
+ebook2
+===
+VAR_C5=2;
+VAR_C6=2;
+
+C1;
+FORK ROT_C3;
+FORK ROT_C4;
+C2;
+JOIN VAR_C5, ROT_C5, QUIT;
+
+ROT_C3: C3;
+  JOIN VAR_C5, ROT_C5, QUIT;
+
+ROT_C4: C4;
+  JOIN VAR_C6, ROT_C6, QUIT;
+
+ROT_C5: C5;
+  JOIN VAR_C6, ROT_C6, QUIT;
+
+ROT_C6: C6;
+  QUIT;
+---
+(source_file
+  (assign (label) (digit))
+  (assign (label) (digit))
+  (call (label))
+  (fork (label))
+  (fork (label))
+  (call (label))
+  (join (label) (label) (label))
+  (def (label))
+  (call (label))
+  (join (label) (label) (label))
+  (def (label))
+  (call (label))
+  (join (label) (label) (label))
+  (def (label))
+  (call (label))
+  (join (label) (label) (label))
+  (def (label))
+  (call (label))
+  (call (label)))

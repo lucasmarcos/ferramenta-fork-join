@@ -1,0 +1,6 @@
+===
+fork
+===
+FORK l;
+---
+(source_file (fork (label)))

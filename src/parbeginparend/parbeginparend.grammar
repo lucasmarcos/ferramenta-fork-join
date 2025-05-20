@@ -1,0 +1,21 @@
+@top Program { command* }
+
+command { Begin | End | ParBegin | ParEnd | Call }
+
+Begin { @specialize<Label, "BEGIN"> }
+
+End { @specialize<Label, "END"> }
+
+ParBegin { @specialize<Label, "PARBEGIN"> }
+
+ParEnd { @specialize<Label, "PAREND"> }
+
+Call { Label ";" }
+
+@skip { space | comment }
+
+@tokens {
+  space { @whitespace+ }
+  comment { "//" ![\n]* }
+  Label { @asciiLetter (@asciiLetter | @digit | "_")* }
+}

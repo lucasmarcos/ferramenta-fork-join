@@ -1,0 +1,21 @@
+@top File { sttm* }
+
+@skip { space | LineComment }
+
+sttm { expr | Def }
+
+expr { (Fork | Join | Assign | Call) ";" }
+
+Fork { "FORK" Label }
+Join { "JOIN" Label "," Label "," Label }
+Assign { Label "=" Digit }
+Call { Label }
+Def { Label ":" }
+
+@tokens {
+  @precedence { "FORK", "JOIN", Label }
+  space { @whitespace+ }
+  LineComment { "//" ![\n]* }
+  Label { $[a-zA-Z_0-9]+ }
+  Digit { $[0-9]+ }
+}

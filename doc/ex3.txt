@@ -1,0 +1,28 @@
+var_R5 = 2;
+var_R6 = 2;
+var_R7 = 2;
+
+FORK ROT_R4;
+R1;
+FORK ROT_R3;
+R2;
+JOIN var_R5, ROT_R5, QUIT;
+
+ROT_R4: R4;
+        JOIN var_R6, ROT_R6, QUIT;
+
+ROT_R3: R3;
+        FORK ROT_R6';
+JOIN var_R5, ROT_R5, QUIT;
+
+ROT_R5: R5;
+	JOIN var_R7, ROT_R7, QUIT;
+
+ROT_R6: R6;
+	JOIN var_R7, ROT_R7, QUIT;
+
+ROT_R6': JOIN var_R6, ROT_R6, QUIT;
+
+ROT_R7: R7;
+	QUIT;
+

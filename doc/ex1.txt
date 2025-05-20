@@ -1,0 +1,29 @@
+var_F = 2;
+var_G = 2;
+var_H = 2;
+
+A;
+FORK ROT_C;
+FORK ROT_D;
+FORK ROT_E;
+B;
+JOIN var_F, ROT_F, QUIT;
+
+ROT_C: C;
+       JOIN var_F, ROT_F, QUIT;
+
+ROT_D: D;
+       JOIN var_G, ROT_G, QUIT;
+
+ROT_E: E;
+       JOIN var_H, ROT_H, QUIT;
+
+ROT_F: F;
+       JOIN var_G, ROT_G, QUIT;
+
+ROT_G: G;
+       JOIN var_H, ROT_H, QUIT;
+
+ROT_H: H;
+       QUIT;
+
