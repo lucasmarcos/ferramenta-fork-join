@@ -1,4 +1,4 @@
-export const example = `BEGIN
+export const exploInicialParbeginParend = `BEGIN
   A;
   PARBEGIN
     BEGIN
