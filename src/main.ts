@@ -29,8 +29,8 @@ let intErrors: IError[] = [];
 
 let lezerForkJoinParser: LRParser;
 
-const editorView: HTMLElement = document.getElementById("editor");
-const treeContainer: HTMLElement = document.getElementById("treeContainer");
+const editorView: HTMLElement = document.getElementById("editorContainer");
+const graphContainer: HTMLElement = document.getElementById("graphContainer");
 
 let editor: EditorView;
 
