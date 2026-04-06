@@ -19,7 +19,7 @@ import {
   treewalk as treewalkForkJoin,
 } from "./forkjoin/treewalk.js";
 import { renderGraph } from "./graph.js";
-import { forkJoinHighlight } from "./highlight.js";
+import { forkJoinHighlight, parBeginParEndHighlight } from "./highlight.js";
 import { parser as parbeginParendParser } from "./parBeginParEndParser.js";
 import { exploInicialParbeginParend } from "./parbeginparend/exemplo.js";
 import { interpret as interpretParbeginParend } from "./parbeginparend/interpret.js";
@@ -73,7 +73,7 @@ const getLanguageSupport = (mode: Mode) => {
   const data = getModeData(mode);
 
   const props = [
-    mode === "fork-join" ? forkJoinHighlight : null,
+    mode === "fork-join" ? forkJoinHighlight : parBeginParEndHighlight,
     foldNodeProp.add({
       Def: (tree, _state) => ({ from: tree.from, to: tree.to }),
       Begin: (tree, _state) => ({ from: tree.from, to: tree.to }),
