@@ -1,1 +1,3 @@
 - nós com labels grandes não são mais ovais como deveriam ser
+- as sugestões de correções não estão mais funcionando
+- o realce de sintáxe também parou de funcionar
