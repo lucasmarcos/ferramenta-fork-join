@@ -12,8 +12,7 @@
     "codemirror": "^6.0.2",
     "cytoscape": "^3.33.1",
     "cytoscape-dagre": "^2.5.0",
-    "esbuild": "^0.28.0",
-    "thememirror": "^2.0.1"
+    "esbuild": "^0.28.0"
   },
   "scripts": {
     "build:lezer": "lezer-generator src/lezer/forkjoin.grammar -o out/forkJoinParser.js && lezer-generator src/lezer/parbeginparend.grammar -o out/parBeginParEndParser.js",
