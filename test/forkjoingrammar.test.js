@@ -13,6 +13,6 @@ for (const file of fs.readdirSync(corpusDir)) {
   const content = fs.readFileSync(path.join(corpusDir, file), "utf8");
   
   for (const {name, run} of fileTests(content, file)) {
-    test(name, () => run(forkJoinParser));
+    test(`ForkJoin Grammar: ${file} - ${name}`, () => run(forkJoinParser));
   }
 }

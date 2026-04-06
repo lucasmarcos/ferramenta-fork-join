@@ -1,6 +1,4 @@
-===
-assign
-===
+# assign
 l = 1;
----
-(source_file (assign (label) (digit)))
+==>
+Program(Assign(Label,Number))

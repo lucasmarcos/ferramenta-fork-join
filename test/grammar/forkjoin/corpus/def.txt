@@ -1,6 +1,4 @@
-===
-def
-===
+# def
 l:
----
-(source_file (def (label)))
+==>
+Program(Def(Label))

@@ -1,6 +1,4 @@
-===
-ebook1
-===
+# ebook1
 VAR_J = 2;
 C1;
 FORK ROT_C3;
@@ -13,15 +11,5 @@ ROT_C3:
 
 ROT_C4:
   C4;
----
-(source_file
-  (assign (label) (digit))
-  (call (label))
-  (fork (label))
-  (call (label))
-  (join (label) (label) (label))
-  (def (label))
-  (call (label))
-  (join (label) (label) (label))
-  (def (label))
-  (call (label)))
+==>
+Program(Assign(Label,Number),Call(Label),Fork(Label),Call(Label),Join(Label,Label,Label),Def(Label),Call(Label),Join(Label,Label,Label),Def(Label),Call(Label))

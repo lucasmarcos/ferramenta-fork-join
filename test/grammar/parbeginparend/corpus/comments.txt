@@ -1,6 +1,4 @@
-===
-first
-===
+# first
 // exemplo de programa parbegin/parend
 
 BEGIN // begin sequencial
@@ -22,21 +20,5 @@ BEGIN // begin sequencial
 
   P7; // chamada P7
 END // end sequencial
-
----
-(source_file
-  (begin)
-  (call (label))
-  (parbegin)
-  (call (label))
-  (begin)
-  (call (label))
-  (call (label))
-  (parbegin)
-  (call (label))
-  (call (label))
-  (parend)
-  (end)
-  (parend)
-  (call (label))
-  (end))
+==>
+Program(Begin,Call(Label),ParBegin,Call(Label),Begin,Call(Label),Call(Label),ParBegin,Call(Label),Call(Label),ParEnd,End,ParEnd,Call(Label),End)

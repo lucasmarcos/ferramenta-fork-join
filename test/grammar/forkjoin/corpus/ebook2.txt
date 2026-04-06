@@ -1,6 +1,4 @@
-===
-ebook2
-===
+# ebook2
 VAR_C5=2;
 VAR_C6=2;
 
@@ -21,24 +19,5 @@ ROT_C5: C5;
 
 ROT_C6: C6;
   QUIT;
----
-(source_file
-  (assign (label) (digit))
-  (assign (label) (digit))
-  (call (label))
-  (fork (label))
-  (fork (label))
-  (call (label))
-  (join (label) (label) (label))
-  (def (label))
-  (call (label))
-  (join (label) (label) (label))
-  (def (label))
-  (call (label))
-  (join (label) (label) (label))
-  (def (label))
-  (call (label))
-  (join (label) (label) (label))
-  (def (label))
-  (call (label))
-  (call (label)))
+==>
+Program(Assign(Label,Number),Assign(Label,Number),Call(Label),Fork(Label),Fork(Label),Call(Label),Join(Label,Label,Label),Def(Label),Call(Label),Join(Label,Label,Label),Def(Label),Call(Label),Join(Label,Label,Label),Def(Label),Call(Label),Join(Label,Label,Label),Def(Label),Call(Label),Call(Label))

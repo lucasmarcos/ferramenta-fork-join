@@ -1,9 +1,4 @@
-===
-semespaco
-===
+# semespaco
 DEF:LABEL;QUIT;
----
-(source_file
-  (def (label))
-  (call (label))
-  (call (label)))
+==>
+Program(Def(Label),Call(Label),Call(Label))

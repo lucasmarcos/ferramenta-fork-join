@@ -1,6 +1,4 @@
-===
-ebook3
-===
+# ebook3
 VAR_D=2;
 VAR_E=2;
 
@@ -20,23 +18,5 @@ ROT_E': JOIN VAR_E, ROT_E, QUIT;
 
 ROT_E: E;
   QUIT;
----
-(source_file
-  (assign (label) (digit))
-  (assign (label) (digit))
-  (call (label))
-  (fork (label))
-  (call (label))
-  (fork (label))
-  (join (label) (label) (label))
-  (def (label))
-  (call (label))
-  (join (label) (label) (label))
-  (def (label))
-  (call (label))
-  (join (label) (label) (label))
-  (def (label))
-  (join (label) (label) (label))
-  (def (label))
-  (call (label))
-  (call (label)))
+==>
+Program(Assign(Label,Number),Assign(Label,Number),Call(Label),Fork(Label),Call(Label),Fork(Label),Join(Label,Label,Label),Def(Label),Call(Label),Join(Label,Label,Label),Def(Label),Call(Label),Join(Label,Label,Label),Def(Label),Join(Label,Label,Label),Def(Label),Call(Label),Call(Label))

@@ -1,19 +1,7 @@
-===
-simple
-===
+# simple
 C1;
 FORK C2;
 C3;
 JOIN C2, C3, C4;
----
-(source_file
-  (call
-    (label))
-  (fork
-    (label))
-  (call
-    (label))
-  (join
-    (label)
-    (label)
-    (label)))
+==>
+Program(Call(Label),Fork(Label),Call(Label),Join(Label,Label,Label))

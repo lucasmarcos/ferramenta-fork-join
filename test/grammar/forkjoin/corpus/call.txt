@@ -1,6 +1,4 @@
-===
-call
-===
+# call
 l;
----
-(source_file (call (label)))
+==>
+Program(Call(Label))

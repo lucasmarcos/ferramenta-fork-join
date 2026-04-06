@@ -1,6 +1,4 @@
-===
-fork
-===
+# fork
 FORK l;
----
-(source_file (fork (label)))
+==>
+Program(Fork(Label))

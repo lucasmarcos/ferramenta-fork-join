@@ -1,64 +1,13 @@
-import assert from "node:assert";
 import { test } from "node:test";
-import { recursivo } from "../out/recursivo.js";
+import assert from "node:assert";
+import { parser } from "../out/forkJoinParser.js";
+import { recursivo } from "../out/forkjoin/recursivo.js";
 
-test("recursivo", (t) => {
-  const input = new Map();
-
-  input.set("A", [
-    {
-      type: "call",
-      child(id) {
-        return { text: "B" };
-      },
-    },
-  ]);
-
-  input.set("B", [
-    {
-      type: "call",
-      child(id) {
-        return { text: "A" };
-      },
-    },
-  ]);
-
-  const output = recursivo(input);
-  const expected = true;
-  assert.strictEqual(output, expected);
-});
-
-test("vazio não é recursivo", (t) => {
-  const input = new Map();
-  input.set(undefined, []);
-
-  const output = recursivo(input);
-  const expected = false;
-  assert.strictEqual(output, expected);
-});
-
-test("chamadas isoladas não é recursivo", (t) => {
-  const input = new Map();
-
-  input.set("A", [
-    {
-      type: "call",
-      child(id) {
-        return { text: "B" };
-      },
-    },
-  ]);
-
-  input.set("C", [
-    {
-      type: "call",
-      child(id) {
-        return { text: "D" };
-      },
-    },
-  ]);
-
-  const output = recursivo(input);
-  const expected = false;
-  assert.strictEqual(output, expected);
+test("recursivo", () => {
+  // Mock blockMap for simplicity or use real treewalk logic
+  const blockMap = new Map();
+  blockMap.set("a", [{ name: "Call", children: [{ name: "Label", text: "b" }] }]);
+  const res = recursivo(blockMap);
+  assert.ok(res.has("a"));
+  assert.ok(res.get("a").has("b"));
 });

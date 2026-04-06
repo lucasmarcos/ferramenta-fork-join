@@ -1,11 +1,11 @@
-import assert from "node:assert";
 import { test } from "node:test";
+import assert from "node:assert";
+import { parser } from "../out/forkJoinParser.js";
+import { checkSyntax } from "../out/forkjoin/syntax.js";
 
-import { checkSyntax } from "../out/syntax.js";
-
-test("verifica sintaxe vazia", (t) => {
-  const input = { rootNode: {} };
-  const output = checkSyntax(input);
-  const expected = [];
-  assert.deepEqual(output, expected);
+test("check syntax", () => {
+  const code = "FORK ;";
+  const tree = parser.parse(code);
+  const res = checkSyntax(tree);
+  assert.strictEqual(res.length, 1);
 });

@@ -1,12 +1,8 @@
-===
-separado
-===
+# separado
 VAR
 =
 2
 // comentario
 ;
----
-(source_file
-  (assign (label) (digit))
-  (comment))
+==>
+Program(Assign(Label,Number))
