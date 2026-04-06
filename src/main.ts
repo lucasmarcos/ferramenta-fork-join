@@ -8,7 +8,7 @@ import {
 import { type Diagnostic, linter, lintGutter } from "@codemirror/lint";
 import { Compartment } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
-import type { Tree } from "@lezer/common";
+import type { NodePropSource, Tree } from "@lezer/common";
 import { basicSetup } from "codemirror";
 import { parser as forkJoinParser } from "./forkJoinParser.js";
 import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
@@ -78,9 +78,9 @@ const getLanguageSupport = (mode: Mode) => {
       Def: (tree, _state) => ({ from: tree.from, to: tree.to }),
       Begin: (tree, _state) => ({ from: tree.from, to: tree.to }),
     }),
-  ].filter((p) => p !== null);
+  ].filter((p): p is NodePropSource => p !== null);
 
-  const lezerParser = data.parser.configure({ props: props as unknown[] });
+  const lezerParser = data.parser.configure({ props });
 
   const lang = LRLanguage.define({
     name: data.name,
