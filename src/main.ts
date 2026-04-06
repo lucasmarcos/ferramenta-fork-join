@@ -13,20 +13,19 @@ import type { EditorState } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import type { LRParser } from "@lezer/lr";
 import { basicSetup } from "codemirror";
-import { parser as lezerParser } from "../src/lezerParser.js";
-import { exemploInicial } from "./exemplo.js";
+import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
+import { exemploInicialParbeginParend } from "./forkjoin/exemplo.js";
 import { forkJoinHighlight } from "./highlight.js";
 import { resolve } from "./resolve.js";
 import { checkSyntax } from "./syntax.js";
 import { type IError, treewalk } from "./treewalk.js";
 
+// todo: import both of the generated lezer parsers
+
 // import { syntaxHighlighting } from "@codemirror/language";
 // import { classHighlighter } from "@lezer/highlight";
 
 let intErrors: IError[] = [];
-
-let parser: Parser;
-let ForkJoin: Language;
 
 let lezerForkJoinParser: LRParser;
 
@@ -151,22 +150,6 @@ const share = decodeURI(document.location.hash.substring(1));
 const code = share ? share : exemploInicial;
 
 (async () => {
-  await graphviz.loadWASM();
-  console.log("loaded graphviz");
-
-  await Parser.init({
-    locateFile(url: string, _dir: string) {
-      return url;
-    },
-  });
-  console.log("init tree-sitter");
-
-  ForkJoin = await Language.load("tree-sitter-forkjoin.wasm");
-  console.log("loaded parser");
-
-  parser = new Parser();
-  parser.setLanguage(ForkJoin);
-
   lezerForkJoinParser = lezerParser.configure({
     props: [
       forkJoinHighlight,
