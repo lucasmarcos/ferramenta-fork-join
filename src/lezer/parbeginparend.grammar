@@ -17,5 +17,5 @@ Call { Label ";" }
 @tokens {
   space { @whitespace+ }
   comment { "//" ![\n]* }
-  Label { @asciiLetter (@asciiLetter | @digit)* }
+  Label { @asciiLetter (@asciiLetter | @digit | "_")* }
 }

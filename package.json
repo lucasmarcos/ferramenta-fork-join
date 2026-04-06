@@ -16,7 +16,7 @@
     "thememirror": "^2.0.1"
   },
   "scripts": {
-    "build:lezer": "lezer-generator src/forkjoin.grammar -o out/forkJoinParser.js && lezer-generator src/parbeginparend/parbeginparend.grammar -o out/parBeginParEndParser.js",
+    "build:lezer": "lezer-generator src/lezer/forkjoin.grammar -o out/forkJoinParser.js && lezer-generator src/lezer/parbeginparend.grammar -o out/parBeginParEndParser.js",
     "build:css": "tailwindcss -i src/index.css -o web/index.css",
     "build:js": "tsgo",
     "watch:js": "tsgo --watch",
