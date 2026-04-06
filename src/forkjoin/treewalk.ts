@@ -1,4 +1,5 @@
 import type { Action } from "@codemirror/lint";
+import type { Tree, TreeCursor } from "@lezer/common";
 import { recursivo } from "./recursivo.js";
 
 export interface Command {
@@ -12,17 +13,16 @@ export interface Command {
 
 export interface IError {
   message: string;
-  node: Node;
   start: number;
   end: number;
   actions: Action[];
   severity?: string;
 }
 
-let blockMap: Map<string, Node[]>;
+let blockMap: Map<string, any[]>;
 let currentBlock: string;
 let variables: Map<string, number>;
-let variableDef: Map<string, Node>;
+let variableDef: Map<string, { start: number; end: number; value: number }>;
 let joinCalls: Map<string, number>;
 
 let threads: Map<string, Command[]>;
@@ -31,63 +31,103 @@ let currentThread: string;
 let errors: IError[];
 
 let depth: number;
-
 let secondRound: boolean;
 
-const mapCommand = (node: Node) => {
-  if (node.type === "def") {
-    currentBlock = node.child(0).text;
+const getLabelText = (doc: string, cursor: TreeCursor): string => {
+  return doc.slice(cursor.from, cursor.to);
+};
+
+const mapCommand = (doc: string, cursor: TreeCursor) => {
+  if (cursor.name === "Def") {
+    cursor.firstChild(); // Label
+    currentBlock = getLabelText(doc, cursor);
+    cursor.parent();
   } else {
     if (!blockMap.has(currentBlock)) {
       blockMap.set(currentBlock, []);
     }
-    blockMap.get(currentBlock).push(node);
+    // Store cursor state/positions or a simplified command object
+    const cmd: any = {
+      name: cursor.name,
+      from: cursor.from,
+      to: cursor.to,
+      children: [],
+    };
+
+    // Capture necessary child info while cursor is at the command
+    if (cursor.firstChild()) {
+      do {
+        cmd.children.push({
+          name: cursor.name,
+          from: cursor.from,
+          to: cursor.to,
+          text: doc.slice(cursor.from, cursor.to),
+        });
+      } while (cursor.nextSibling());
+      cursor.parent();
+    }
+
+    blockMap.get(currentBlock)!.push(cmd);
   }
 };
 
-const doMap = (root: Node) => {
-  for (let i = 0; i < root.childCount; i++) {
-    mapCommand(root.child(i));
-  }
+const doMap = (doc: string, tree: Tree) => {
+  const cursor = tree.cursor();
+  if (!cursor.firstChild()) return; // Into Program
+
+  do {
+    mapCommand(doc, cursor);
+  } while (cursor.nextSibling());
 };
 
-const process = (command: Node) => {
-  switch (command.type) {
-    case "assign":
-      variables.set(
-        command.child(0).text,
-        Number.parseInt(command.child(2).text, 10),
-      );
-      variableDef.set(command.child(0).text, command);
-      break;
-
-    case "call":
-      if (blockMap.has(command.child(0).text)) {
-        execute(blockMap.get(command.child(0).text));
-      } else {
-        threads
-          .get(currentThread)
-          .push({ id: crypto.randomUUID(), label: command.child(0).text });
+const process = (command: any) => {
+  switch (command.name) {
+    case "Assign": {
+      const label = command.children.find((c: any) => c.name === "Label")?.text;
+      const numStr = command.children.find(
+        (c: any) => c.name === "Number",
+      )?.text;
+      if (label && numStr) {
+        variables.set(label, Number.parseInt(numStr));
+        variableDef.set(label, {
+          start: command.from,
+          end: command.to,
+          value: Number.parseInt(numStr),
+        });
       }
       break;
+    }
 
-    case "fork": {
-      const label = command.child(1).text;
+    case "Call": {
+      const label = command.children.find((c: any) => c.name === "Label")?.text;
+      if (label) {
+        if (blockMap.has(label)) {
+          execute(blockMap.get(label)!);
+        } else {
+          threads
+            .get(currentThread)!
+            .push({ id: crypto.randomUUID(), label: label });
+        }
+      }
+      break;
+    }
 
-      if (blockMap.has(label)) {
+    case "Fork": {
+      const label = command.children.find((c: any) => c.name === "Label")?.text;
+
+      if (label && blockMap.has(label)) {
         const id = crypto.randomUUID();
-        threads.get(currentThread).push({ forkTo: id });
+        threads.get(currentThread)!.push({ forkTo: id });
         threads.set(id, [{ fork: label }]);
-      } else {
+      } else if (label) {
         errors.push({
           message: "Chamada FORK para rótulo que não existe",
-          node: command,
-          start: command.child(1).startIndex,
-          end: command.child(1).endIndex,
+          start: command.from,
+          end: command.to,
           actions: [
             {
               name: "Criar",
-              apply(view, _from, _to) {
+              apply(view, from, to) {
                 view.dispatch({
                   changes: {
                     from: view.state.doc.length,
@@ -103,38 +143,40 @@ const process = (command: Node) => {
       break;
     }
 
-    case "join": {
-      const controlVar = command.child(1).text;
-      const label = command.child(3).text;
-      const quit = command.child(5).text;
+    case "Join": {
+      const labels = command.children.filter((c: any) => c.name === "Label");
+      const controlVar = labels[0]?.text;
+      const targetLabel = labels[1]?.text;
+      const quitNode = command.children.find((c: any) => c.text === "QUIT");
 
-      if (blockMap.has(label)) {
+      if (targetLabel && blockMap.has(targetLabel)) {
         if (!secondRound) {
-          if (joinCalls.has(controlVar)) {
-            const calls = joinCalls.get(controlVar);
+          if (controlVar && joinCalls.has(controlVar)) {
+            const calls = joinCalls.get(controlVar)!;
             joinCalls.set(controlVar, calls + 1);
-          } else {
+          } else if (controlVar) {
             joinCalls.set(controlVar, 1);
           }
         }
 
-        threads.get(currentThread).push({ joinOn: controlVar });
-        threads.set(controlVar, [{ join: label }]);
-      } else {
+        if (controlVar) {
+          threads.get(currentThread)!.push({ joinOn: controlVar });
+          threads.set(controlVar, [{ join: targetLabel }]);
+        }
+      } else if (targetLabel) {
         errors.push({
           message: "Chamada JOIN para rótulo que não existe",
-          node: command,
-          start: command.child(3).startIndex,
-          end: command.child(3).endIndex,
+          start: command.from,
+          end: command.to,
           actions: [
             {
               name: "Criar",
-              apply(view, _from, _to) {
+              apply(view, from, to) {
                 view.dispatch({
                   changes: {
                     from: view.state.doc.length,
                     to: view.state.doc.length,
-                    insert: `\n${label}:\n  QUIT;\n`,
+                    insert: `\n${targetLabel}:\n  QUIT;\n`,
                   },
                 });
               },
@@ -143,16 +185,15 @@ const process = (command: Node) => {
         });
       }
 
-      if (!variables.has(controlVar)) {
+      if (controlVar && !variables.has(controlVar)) {
         errors.push({
           message: "Chamada JOIN usando variável de controle que não existe",
-          node: command,
-          start: command.child(1).startIndex,
-          end: command.child(1).endIndex,
+          start: command.from,
+          end: command.to,
           actions: [
             {
               name: "Criar",
-              apply(view, _from, _to) {
+              apply(view, from, to) {
                 view.dispatch({
                   changes: { from: 0, to: 0, insert: `${controlVar} = 1;\n` },
                 });
@@ -162,13 +203,12 @@ const process = (command: Node) => {
         });
       }
 
-      if (quit !== "QUIT") {
+      if (!quitNode) {
         errors.push({
           message: "A última chamada em um JOIN deve ser QUIT",
-          node: command,
           severity: "error",
-          start: command.child(5).startIndex,
-          end: command.child(5).endIndex,
+          start: command.from,
+          end: command.to,
           actions: [
             {
               name: "Trocar",
@@ -185,7 +225,7 @@ const process = (command: Node) => {
   }
 };
 
-const execute = (commands: Node[]) => {
+const execute = (commands: any[]) => {
   depth++;
 
   let quit = false;
@@ -193,30 +233,29 @@ const execute = (commands: Node[]) => {
   if (depth >= 1000) {
     errors.push({
       message: "Chamadas recursivas não são permitidas",
-      node: undefined,
-      start: undefined,
-      end: undefined,
+      start: 0,
+      end: 0,
       actions: [],
     });
     return;
   }
 
   for (const command of commands) {
-    if (command.childCount === 0) continue;
+    const isQuit = command.children.some((c: any) => c.text === "QUIT");
+    const isJoin = command.name === "Join";
 
-    if (command.child(0).text === "QUIT") {
+    if (isQuit) {
       quit = true;
-    } else if (command.child(0).text === "JOIN") {
+    } else if (isJoin) {
       quit = true;
       process(command);
     } else {
       if (quit) {
         errors.push({
           message: "Chamada de função após o QUIT",
-          node: command,
           severity: "warning",
-          start: command.startIndex,
-          end: command.endIndex,
+          start: command.from,
+          end: command.to,
           actions: [
             {
               name: "Remover",
@@ -240,8 +279,8 @@ const execute = (commands: Node[]) => {
   depth--;
 };
 
-export const treewalk = (tree: Tree) => {
-  currentBlock = undefined;
+export const treewalk = (doc: string, tree: Tree) => {
+  currentBlock = "";
   blockMap = new Map();
   variables = new Map();
   variableDef = new Map();
@@ -252,25 +291,24 @@ export const treewalk = (tree: Tree) => {
   errors = [];
 
   depth = 1;
-
   secondRound = false;
 
-  doMap(tree.rootNode);
+  doMap(doc, tree);
   recursivo(blockMap);
-  execute(blockMap.get(undefined));
+  execute(blockMap.get("") || []);
 
   threads.forEach((_k, v) => {
     if (v !== "0") {
-      const t = threads.get(v)[0];
+      const t = threads.get(v)![0];
 
       currentThread = v;
       threads.set(currentThread, []);
 
       if (t) {
-        if (t.fork) {
-          execute(blockMap.get(t.fork));
-        } else if (t.join) {
-          execute(blockMap.get(t.join));
+        if (t.fork && blockMap.has(t.fork)) {
+          execute(blockMap.get(t.fork)!);
+        } else if (t.join && blockMap.has(t.join)) {
+          execute(blockMap.get(t.join)!);
         }
       }
     }
@@ -280,28 +318,24 @@ export const treewalk = (tree: Tree) => {
 
   for (let i = 0; i < 3; i++) {
     threads.forEach((k, v) => {
-      if (k[0]?.fork) {
+      if (k[0]?.fork && blockMap.has(k[0].fork)) {
         currentThread = v;
         threads.set(currentThread, []);
-        execute(blockMap.get(k[0].fork));
-      } else if (k[0]?.join) {
+        execute(blockMap.get(k[0].fork)!);
+      } else if (k[0]?.join && blockMap.has(k[0].join)) {
         currentThread = v;
         threads.set(currentThread, []);
-        execute(blockMap.get(k[0].join));
+        execute(blockMap.get(k[0].join)!);
       }
     });
   }
 
-  for (const pair of variables) {
-    const variable = pair[0];
-
+  for (const [variable, def] of variableDef.entries()) {
     if (!joinCalls.has(variable)) {
-      const target = variableDef.get(variable);
       errors.push({
         message: "Variável de controle é definida mas não utilizada",
-        node: target,
-        start: target.startIndex,
-        end: target.endIndex,
+        start: def.start,
+        end: def.end,
         severity: "warning",
         actions: [
           {
@@ -315,26 +349,25 @@ export const treewalk = (tree: Tree) => {
         ],
       });
     } else {
-      const calls = joinCalls.get(variable);
-      const target = variableDef.get(variable);
-      const t = Number.parseInt(target.child(2).text, 10);
+      const calls = joinCalls.get(variable)!;
+      const t = def.value;
 
       if (calls !== t) {
         errors.push({
           message:
             "O valor da variável de controle não corresponde ao número de JOINs",
-          node: target,
-          start: target.startIndex,
-          end: target.endIndex,
+          start: def.start,
+          end: def.end,
           actions: [
             {
               name: "Corrigir",
-              apply(view, _from, _to) {
+              apply(view, from, to) {
+                // This is a bit tricky with the new structure, might need more info
                 view.dispatch({
                   changes: {
-                    from: target.child(2).startIndex,
-                    to: target.child(2).endIndex,
-                    insert: calls.toString(),
+                    from: def.start,
+                    to: def.end,
+                    insert: `${variable} = ${calls};`,
                   },
                 });
               },

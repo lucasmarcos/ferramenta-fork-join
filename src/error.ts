@@ -1,23 +1,23 @@
-export const error = (ast) => {
-  const out = [];
+import type { Tree } from "@lezer/common";
 
-  const process = (node) => {
-    if (node.type === "ERROR") {
-      return node;
+export const error = (tree: Tree) => {
+  const out: any[] = [];
+  const cursor = tree.cursor();
+
+  const process = () => {
+    if (cursor.type.isError) {
+      out.push({ from: cursor.from, to: cursor.to });
+    }
+
+    if (cursor.firstChild()) {
+      do {
+        process();
+      } while (cursor.nextSibling());
+      cursor.parent();
     }
   };
 
-  const dfs = (node) => {
-    const res = process(node);
-    if (res) {
-      out.push(res);
-    }
-    for (let i = 0; i < node.childCount; i++) {
-      dfs(node.child(i));
-    }
-  };
-
-  dfs(ast.rootNode);
+  process();
 
   return out;
 };

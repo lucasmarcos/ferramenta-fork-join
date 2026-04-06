@@ -1,4 +1,3 @@
-import type { CompletionContext } from "@codemirror/autocomplete";
 import { indentWithTab } from "@codemirror/commands";
 import {
   foldGutter,
@@ -7,282 +6,201 @@ import {
   LanguageSupport,
   LRLanguage,
 } from "@codemirror/language";
-import type { Severity } from "@codemirror/lint";
 import { type Diagnostic, linter, lintGutter } from "@codemirror/lint";
-import type { EditorState } from "@codemirror/state";
+import { Compartment } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
-import type { LRParser } from "@lezer/lr";
+import type { Tree } from "@lezer/common";
 import { basicSetup } from "codemirror";
+
 import { parser as forkJoinParser } from "./forkJoinParser.js";
 import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
-import { resolve } from "./forkjoin/resolve.js";
-import { checkSyntax } from "./forkjoin/syntax.js";
-import { type IError, treewalk } from "./forkjoin/treewalk.js";
+import { resolve as resolveForkJoin } from "./forkjoin/resolve.js";
+import { checkSyntax as checkSyntaxForkJoin } from "./forkjoin/syntax.js";
+import {
+  type IError,
+  treewalk as treewalkForkJoin,
+} from "./forkjoin/treewalk.js";
+import { renderGraph } from "./graph.js";
 import { forkJoinHighlight } from "./highlight.js";
-import { parser as parbeginParendParser } from "./parbeginParendParser.js";
-import { exemploInicialParbeginParend } from "./parbeginparend/exemplo.js";
+import { parser as parbeginParendParser } from "./parBeginParEndParser.js";
+import { exploInicialParbeginParend } from "./parbeginparend/exemplo.js";
+import { interpret as interpretParbeginParend } from "./parbeginparend/interpret.js";
+import { parse as parseParbeginParend } from "./parbeginparend/ir.js";
+import { stackify as stackifyParbeginParend } from "./parbeginparend/stack.js";
 
-// import { syntaxHighlighting } from "@codemirror/language";
-// import { classHighlighter } from "@lezer/highlight";
+type Mode = "fork-join" | "parbegin-parend";
+let currentMode: Mode = "fork-join";
+
+const editorViewElement = document.getElementById("editor")!;
+const graphContainer = document.getElementById("graph")!;
+const modeButtons = {
+  "fork-join": document.getElementById("mode-fork-join")!,
+  "parbegin-parend": document.getElementById("mode-parbegin-parend")!,
+};
+
+let editor: EditorView;
+const languageConf = new Compartment();
 
 let intErrors: IError[] = [];
 
-let lezerForkJoinParser: LRParser;
+const getModeData = (mode: Mode) => {
+  if (mode === "fork-join") {
+    return {
+      parser: forkJoinParser,
+      example: exemploInicialForkJoin,
+      name: "fork-join",
+    };
+  }
+  return {
+    parser: parbeginParendParser,
+    example: exploInicialParbeginParend,
+    name: "parbegin-parend",
+  };
+};
 
-const editorView: HTMLElement = document.getElementById("editor");
-const graphContainer: HTMLElement = document.getElementById("graph");
-
-let editor: EditorView;
-
-/*
-const pontoEVirgula = () => {
-  if (parser && ForkJoin) {
-    const ast = parser.parse(view.state.doc.toString());
-    const errors = error(ast);
-    for (const error of errors) {
-      if (error.previousSibling) {
-        diagnostics.push({
-          from: error.previousSibling.startIndex,
-          to: error.previousSibling.endIndex,
-          message: "Faltando ponto e vírgula.",
-          severity: "error",
-          actions: [
-            {
-              name: "Adicionar",
-              apply(view, from, to) {
-                view.dispatch({ changes: { from: to, to: to, insert: ";" } });
-              },
-            },
-          ],
-        });
-      }
+const updateUI = () => {
+  Object.entries(modeButtons).forEach(([mode, btn]) => {
+    if (mode === currentMode) {
+      btn.classList.add("bg-white", "shadow-sm", "text-slate-900");
+      btn.classList.remove("text-slate-500");
+    } else {
+      btn.classList.remove("bg-white", "shadow-sm", "text-slate-900");
+      btn.classList.add("text-slate-500");
     }
-  }
-};
-*/
-
-const lint = linter(
-  (view: EditorView) => {
-    intErrors = [];
-
-    go(view);
-
-    const diagnostics: Diagnostic[] = [];
-
-    for (const intError of intErrors) {
-      diagnostics.push({
-        message: intError.message,
-        severity: (intError.severity as Severity) || ("error" as Severity),
-        from: intError.start || 0,
-        to: intError.end || 0,
-        actions: intError.actions,
-      });
-    }
-
-    return diagnostics;
-  },
-  { delay: 0, autoPanel: true },
-);
-
-const errorFree = (ast: Tree) => {
-  if (ForkJoin) {
-    const queryError = ForkJoin.query("(ERROR)");
-    const matchesError = queryError.matches(ast.rootNode);
-    return matchesError.length === 0;
-  }
-
-  return intErrors.length === 0;
+  });
 };
 
-const checkSyntaxErrors = (ast: Tree) => {
-  const errorQuery = ForkJoin.query("(ERROR)");
-  const matchesError = errorQuery.matches(ast.rootNode);
+const switchMode = (mode: Mode) => {
+  currentMode = mode;
+  updateUI();
+  const data = getModeData(mode);
 
-  for (const _match of matchesError) {
-    // console.log(match.toString());
-  }
+  editor.dispatch({
+    effects: languageConf.reconfigure(getLanguageSupport(mode)),
+    changes: { from: 0, to: editor.state.doc.length, insert: data.example },
+  });
 
-  return matchesError.length === 0;
+  go();
 };
 
-const go = (u: EditorView) => {
-  const code = u.state.doc.toString();
-
-  document.location.hash = encodeURI(code);
-
-  if (!code) {
-    return;
-  }
-
-  // console.log(lezerForkJoinParser.parse(code).children.toString());
-
-  const tree = parser.parse(code);
-  // console.log(tree.rootNode.toString());
-  const s = checkSyntaxErrors(tree);
-  const e = checkSyntax(tree);
-
-  if (e.length !== 0) {
-    intErrors = e;
-  } else if (s) {
-    const walked = treewalk(tree);
-    const dot = resolve(walked.threads);
-
-    intErrors = walked.errors;
-
-    if (errorFree(tree)) {
-      treeContainer.innerHTML = graphviz.layout(dot);
-      treeContainer.style.opacity = "1";
-      (treeContainer.children[0] as SVGElement).style.width =
-        `${treeContainer.clientWidth * 0.9}px`;
-      (treeContainer.children[0] as SVGElement).style.height =
-        `${treeContainer.clientHeight * 0.9}px`;
-    }
-  }
-};
-
-const updated = EditorView.updateListener.of((update) => {
-  if (update.docChanged) {
-    treeContainer.style.opacity = "0.5";
-  }
-});
-
-const share = decodeURI(document.location.hash.substring(1));
-const code = share ? share : exemploInicialForkJoin;
-
-(async () => {
-  lezerForkJoinParser = lezerParser.configure({
+const getLanguageSupport = (mode: Mode) => {
+  const data = getModeData(mode);
+  const lezerParser = data.parser.configure({
     props: [
-      forkJoinHighlight,
-      foldNodeProp.add((type) => {
-        if (type.name === "Def") {
-          return (_tree, state) => {
-            return {
-              from: 0,
-              to: state.doc.length,
-            };
-          };
-        }
-
-        return null;
+      mode === "fork-join" ? forkJoinHighlight : [],
+      foldNodeProp.add({
+        Def: (tree, _state) => ({ from: tree.from, to: tree.to }),
+        Begin: (tree, _state) => ({ from: tree.from, to: tree.to }),
       }),
     ],
   });
 
-  const forkJoinData = LRLanguage.define({
-    name: "fork-join",
-    parser: lezerForkJoinParser,
-    languageData: {
-      commentTokens: { line: "//" },
-    },
+  const lang = LRLanguage.define({
+    name: data.name,
+    parser: lezerParser,
+    languageData: { commentTokens: { line: "//" } },
   });
 
-  const collectLabels = (state: EditorState) => {
-    const doc = state.doc.toString();
-    const tree = parser.parse(doc);
-    const labels = new Set<string>();
+  return new LanguageSupport(lang);
+};
 
-    const traverse = (node) => {
-      if (node.type === "label") {
-        labels.add(node.text);
-      }
-      let child = node.firstChild;
-      while (child) {
-        traverse(child);
-        child = child.nextSibling;
-      }
-    };
-
-    traverse(tree.rootNode);
-    return Array.from(labels).map((label) => ({
-      label,
-      type: "variable",
-    }));
+const errorFree = (tree: Tree) => {
+  const cursor = tree.cursor();
+  const process = (): boolean => {
+    if (cursor.type.isError) return false;
+    if (cursor.firstChild()) {
+      do {
+        if (!process()) return false;
+      } while (cursor.nextSibling());
+      cursor.parent();
+    }
+    return true;
   };
+  return process() && intErrors.length === 0;
+};
 
-  const forkJoinCompletions = (context: CompletionContext) => {
-    const word = context.matchBefore(/[a-zA-Z_'][a-zA-Z_'0-9]*/);
-    if (!word) return null;
+const lint = linter((view) => {
+  const code = view.state.doc.toString();
+  const diagnostics: Diagnostic[] = [];
+  intErrors = [];
 
-    if (word.from === word.to && !context.explicit) return null;
+  if (currentMode === "fork-join") {
+    const tree = forkJoinParser.parse(code);
+    const syntaxErrors = checkSyntaxForkJoin(tree);
 
-    const options = [
-      { label: "FORK", type: "keyword" },
-      { label: "JOIN", type: "keyword" },
-      ...collectLabels(context.state),
-    ];
-
-    return {
-      from: word.from,
-      options,
-      validFor: /^[a-zA-Z_'][a-zA-Z_'0-9]*$/,
-    };
-  };
-
-  const forkJoinLanguageSupport = new LanguageSupport(
-    forkJoinData,
-    forkJoinData.data.of({
-      autocomplete: forkJoinCompletions,
-    }),
-  );
-
-  const foldS = foldService.of((state, lineStart, _lineEnd) => {
-    const line = state.doc.lineAt(lineStart);
-    const lineContent = line.text.trim();
-
-    if (lineContent.match(/^[a-zA-Z_'][a-zA-Z_'0-9]*:/)) {
-      const totalLines = state.doc.lines;
-      let endLine = lineStart;
-
-      for (let i = lineStart + 1; i <= totalLines; i++) {
-        const nextLine = state.doc.line(i);
-        const nextContent = nextLine.text.trim();
-        if (nextContent.match(/^[a-zA-Z_'][a-zA-Z_'0-9]*:/)) {
-          endLine = i - 1;
-          break;
-        }
-        if (i === totalLines) {
-          endLine = i;
-        }
+    if (syntaxErrors.length > 0) {
+      for (const err of syntaxErrors) {
+        diagnostics.push({
+          message: err.message,
+          severity: "error",
+          from: err.start || 0,
+          to: err.end || 0,
+        });
       }
-
-      if (endLine > lineStart) {
-        return {
-          from: line.from,
-          to: state.doc.line(endLine).to,
-        };
+    } else {
+      const walked = treewalkForkJoin(code, tree);
+      intErrors = walked.errors;
+      for (const err of walked.errors) {
+        diagnostics.push({
+          message: err.message,
+          severity: (err.severity as any) || "error",
+          from: err.start || 0,
+          to: err.end || 0,
+        });
       }
     }
+  }
 
-    return null;
-  });
+  go();
+  return diagnostics;
+});
 
-  editor = new EditorView({
-    extensions: [
-      lintGutter(),
-      basicSetup,
-      keymap.of([indentWithTab]),
-      lint,
-      forkJoinLanguageSupport,
-      foldGutter(),
-      foldS,
-      updated,
-    ],
-    parent: editorView,
-    doc: code,
-  });
-})();
-
-const _forkJoinCompletions = (_context: CompletionContext) => {
-  return {};
-};
-
-const _dumpState = () => {
+const go = () => {
   const code = editor.state.doc.toString();
-  const ast = parser.parse(code);
-  const walked = treewalk(ast);
-  const solved = resolve(walked.threads);
+  document.location.hash = encodeURI(code);
+  if (!code) return;
 
-  console.log(ast.rootNode.toString());
-  console.log(walked);
-  console.log(solved);
+  let elements: any[] = [];
+
+  if (currentMode === "fork-join") {
+    const tree = forkJoinParser.parse(code);
+    if (errorFree(tree)) {
+      const walked = treewalkForkJoin(code, tree);
+      elements = resolveForkJoin(walked.threads);
+    }
+  } else {
+    const tree = parbeginParendParser.parse(code);
+    const ir = parseParbeginParend(code, tree);
+    const stack = stackifyParbeginParend(ir);
+    elements = interpretParbeginParend(stack);
+  }
+
+  if (elements.length > 0) {
+    renderGraph(graphContainer, elements);
+  }
 };
+
+// Initialization
+const initialCode =
+  decodeURI(document.location.hash.substring(1)) || exemploInicialForkJoin;
+
+editor = new EditorView({
+  extensions: [
+    basicSetup,
+    keymap.of([indentWithTab]),
+    languageConf.of(getLanguageSupport(currentMode)),
+    lint,
+    lintGutter(),
+    foldGutter(),
+    EditorView.updateListener.of((update) => {
+      if (update.docChanged) go();
+    }),
+  ],
+  parent: editorViewElement,
+  doc: initialCode,
+});
+
+modeButtons["fork-join"].onclick = () => switchMode("fork-join");
+modeButtons["parbegin-parend"].onclick = () => switchMode("parbegin-parend");
+
+go();

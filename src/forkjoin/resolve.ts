@@ -1,45 +1,48 @@
 import type { Command } from "./treewalk.js";
 
 export const resolve = (threads: Map<string, Command[]>) => {
-  let latest: string;
-
-  let dot = "digraph {";
+  const elements: any[] = [];
+  let latest: string | undefined;
 
   threads.forEach((_k, v) => {
     const thread = threads.get(v);
     latest = undefined;
 
+    if (!thread) return;
+
     for (const command of thread) {
       if (command.forkTo) {
-        const lead = threads.get(command.forkTo)[0];
+        const lead = threads.get(command.forkTo)?.[0];
 
         if (lead) {
           if (lead.joinOn) {
-            const nextLead = threads.get(lead.joinOn)[0];
-
+            const nextLead = threads.get(lead.joinOn)?.[0];
             if (latest && nextLead?.id) {
-              dot = `${dot} "${latest}" -> "${nextLead.id}";`;
+              elements.push({ data: { source: latest, target: nextLead.id } });
             }
           } else {
             if (latest && lead.id) {
-              dot = `${dot} "${latest}" -> "${lead.id}";`;
+              elements.push({ data: { source: latest, target: lead.id } });
             }
           }
         }
       } else if (command.joinOn) {
-        const lead = threads.get(command.joinOn)[0];
+        const lead = threads.get(command.joinOn)?.[0];
         if (latest && lead?.id) {
-          dot = `${dot} "${latest}" -> "${lead.id}";`;
+          elements.push({ data: { source: latest, target: lead.id } });
         }
       } else if (command.label) {
-        if (command.label.length <= 2) {
-          dot = `${dot} "${command.id}" [label="${command.label}" shape=circle width=0.5 fixedsize=shape];`;
-        } else {
-          dot = `${dot} "${command.id}" [label="${command.label}"];`;
-        }
+        // Create node
+        elements.push({
+          data: {
+            id: command.id,
+            label: command.label,
+            shape: command.label.length <= 2 ? "ellipse" : "round-rectangle",
+          },
+        });
 
         if (latest && command.id) {
-          dot = `${dot} "${latest}" -> "${command.id}";`;
+          elements.push({ data: { source: latest, target: command.id } });
         }
 
         latest = command.id;
@@ -47,7 +50,5 @@ export const resolve = (threads: Map<string, Command[]>) => {
     }
   });
 
-  dot = `${dot} }`;
-
-  return dot;
+  return elements;
 };

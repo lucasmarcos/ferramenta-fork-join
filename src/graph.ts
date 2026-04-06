@@ -3,9 +3,10 @@ import dagre from "cytoscape-dagre";
 
 cytoscape.use(dagre);
 
-export const toCytoscape = (graph) => {
+export const renderGraph = (container: HTMLElement, elements: any[]) => {
   return cytoscape({
-    elements: graph.elements,
+    container,
+    elements,
     layout: { name: "dagre" },
     style: [
       {

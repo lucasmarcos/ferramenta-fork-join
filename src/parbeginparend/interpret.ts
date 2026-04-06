@@ -1,7 +1,12 @@
-export const interpret = (stack) => {
-  const elements = [];
+import type { StackNode } from "./stack.js";
 
-  const process = (node, dependsOn = []) => {
+export const interpret = (stack: StackNode) => {
+  const elements: any[] = [];
+
+  const process = (
+    node: StackNode,
+    dependsOn: StackNode[] = [],
+  ): StackNode[] => {
     if (!node) return [];
 
     switch (node.type) {
@@ -27,7 +32,7 @@ export const interpret = (stack) => {
       }
 
       case "par": {
-        let allOutputs = [];
+        let allOutputs: StackNode[] = [];
 
         if (Array.isArray(node.child)) {
           for (const branch of node.child) {

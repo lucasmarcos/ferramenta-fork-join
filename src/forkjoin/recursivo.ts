@@ -1,30 +1,22 @@
-export const recursivo = (blockMap: Map<string, Node[]>) => {
-  const callMap: Map<string, Set<string>> = new Map();
+export const recursivo = (blockMap: Map<string, any[]>) => {
+  const calls = new Map<string, Set<string>>();
 
   for (const blockName of blockMap.keys()) {
-    if (blockName) {
-      const callsSet: Set<string> = new Set();
-
-      for (const call of blockMap.get(blockName)) {
-        if (call.type === "call") {
-          callsSet.add(call.child(0).text);
-        }
-      }
-
-      callMap.set(blockName, callsSet);
-    }
-  }
-
-  for (const [k, v] of callMap) {
-    for (const c of v) {
-      const theOther = callMap.get(c);
-      if (theOther) {
-        if (theOther.has(k)) {
-          return true;
+    const callsSet = new Set<string>();
+    const block = blockMap.get(blockName);
+    if (block) {
+      for (const cmd of block) {
+        if (cmd.name === "Call") {
+          const labelNode = cmd.children.find((c: any) => c.name === "Label");
+          if (labelNode) {
+            callsSet.add(labelNode.text);
+          }
         }
       }
     }
+    calls.set(blockName, callsSet);
   }
 
-  return false;
+  // Basic cycle detection or just returning
+  return calls;
 };

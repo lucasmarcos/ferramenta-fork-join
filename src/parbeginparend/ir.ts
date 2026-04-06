@@ -1,6 +1,8 @@
-export const parse = (doc, tree) => {
-  const q = [];
-  const ir = [];
+import type { Tree } from "@lezer/common";
+
+export const parse = (doc: string, tree: Tree) => {
+  const q: string[] = [];
+  const ir: string[] = [];
 
   const cursor = tree.cursor();
   do {
@@ -33,7 +35,8 @@ export const parse = (doc, tree) => {
       }
       case "Call": {
         cursor.firstChild();
-        ir.push(doc.substr(cursor.from, cursor.to - cursor.from));
+        ir.push(doc.substring(cursor.from, cursor.to));
+        cursor.parent();
         break;
       }
     }
