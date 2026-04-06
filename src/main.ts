@@ -13,14 +13,14 @@ import type { EditorState } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import type { LRParser } from "@lezer/lr";
 import { basicSetup } from "codemirror";
+import { parser as forkJoinParser } from "./forkJoinParser.js";
 import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
+import { resolve } from "./forkjoin/resolve.js";
+import { checkSyntax } from "./forkjoin/syntax.js";
+import { type IError, treewalk } from "./forkjoin/treewalk.js";
 import { forkJoinHighlight } from "./highlight.js";
+import { parser as parbeginParendParser } from "./parbeginParendParser.js";
 import { exemploInicialParbeginParend } from "./parbeginparend/exemplo.js";
-import { resolve } from "./resolve.js";
-import { checkSyntax } from "./syntax.js";
-import { type IError, treewalk } from "./treewalk.js";
-
-// todo: import both of the generated lezer parsers
 
 // import { syntaxHighlighting } from "@codemirror/language";
 // import { classHighlighter } from "@lezer/highlight";
@@ -29,8 +29,8 @@ let intErrors: IError[] = [];
 
 let lezerForkJoinParser: LRParser;
 
-const editorView: HTMLElement = document.getElementById("editorContainer");
-const graphContainer: HTMLElement = document.getElementById("graphContainer");
+const editorView: HTMLElement = document.getElementById("editor");
+const graphContainer: HTMLElement = document.getElementById("graph");
 
 let editor: EditorView;
 
