@@ -99,7 +99,7 @@ const checkSyntaxErrors = (ast: Tree) => {
   const errorQuery = ForkJoin.query("(ERROR)");
   const matchesError = errorQuery.matches(ast.rootNode);
 
-  for (const match of matchesError) {
+  for (const _match of matchesError) {
     // console.log(match.toString());
   }
 
@@ -154,8 +154,8 @@ const code = share ? share : exemploInicial;
   await graphviz.loadWASM();
   console.log("loaded graphviz");
 
-  await Parser.init(<any>{
-    locateFile(url: string, dir: string) {
+  await Parser.init({
+    locateFile(url: string, _dir: string) {
       return url;
     },
   });
@@ -172,7 +172,7 @@ const code = share ? share : exemploInicial;
       forkJoinHighlight,
       foldNodeProp.add((type) => {
         if (type.name === "Def") {
-          return (tree, state) => {
+          return (_tree, state) => {
             return {
               from: 0,
               to: state.doc.length,
@@ -242,7 +242,7 @@ const code = share ? share : exemploInicial;
     }),
   );
 
-  const foldS = foldService.of((state, lineStart, lineEnd) => {
+  const foldS = foldService.of((state, lineStart, _lineEnd) => {
     const line = state.doc.lineAt(lineStart);
     const lineContent = line.text.trim();
 
@@ -289,11 +289,11 @@ const code = share ? share : exemploInicial;
   });
 })();
 
-const forkJoinCompletions = (context: CompletionContext) => {
+const _forkJoinCompletions = (_context: CompletionContext) => {
   return {};
 };
 
-(<any>window).dumpState = () => {
+const _dumpState = () => {
   const code = editor.state.doc.toString();
   const ast = parser.parse(code);
   const walked = treewalk(ast);

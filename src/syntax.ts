@@ -1,6 +1,4 @@
-import type { Tree } from "web-tree-sitter";
-
-export const checkSyntax = (ast: Tree) => {
+export const checkSyntax = (ast) => {
   const errors = [];
 
   const process = (node) => {
@@ -64,7 +62,7 @@ export const checkSyntax = (ast: Tree) => {
                 actions: [
                   {
                     name: "Adicionar",
-                    apply(view, from, to) {
+                    apply(view, _from, to) {
                       view.dispatch({
                         changes: {
                           from: to,

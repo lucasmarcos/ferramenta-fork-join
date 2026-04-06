@@ -5,7 +5,7 @@ export const resolve = (threads: Map<string, Command[]>) => {
 
   let dot = "digraph {";
 
-  threads.forEach((k, v) => {
+  threads.forEach((_k, v) => {
     const thread = threads.get(v);
     latest = undefined;
 
@@ -17,7 +17,7 @@ export const resolve = (threads: Map<string, Command[]>) => {
           if (lead.joinOn) {
             const nextLead = threads.get(lead.joinOn)[0];
 
-            if (latest && nextLead && nextLead.id) {
+            if (latest && nextLead?.id) {
               dot = `${dot} "${latest}" -> "${nextLead.id}";`;
             }
           } else {
@@ -28,7 +28,7 @@ export const resolve = (threads: Map<string, Command[]>) => {
         }
       } else if (command.joinOn) {
         const lead = threads.get(command.joinOn)[0];
-        if (latest && lead && lead.id) {
+        if (latest && lead?.id) {
           dot = `${dot} "${latest}" -> "${lead.id}";`;
         }
       } else if (command.label) {

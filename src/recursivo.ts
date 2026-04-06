@@ -1,5 +1,3 @@
-import type { Node } from "web-tree-sitter";
-
 export const recursivo = (blockMap: Map<string, Node[]>) => {
   const callMap: Map<string, Set<string>> = new Map();
 

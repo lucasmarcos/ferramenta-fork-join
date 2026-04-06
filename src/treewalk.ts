@@ -1,5 +1,4 @@
 import type { Action } from "@codemirror/lint";
-import type { Node, Tree } from "web-tree-sitter";
 import { recursivo } from "./recursivo.js";
 
 export interface Command {
@@ -57,7 +56,7 @@ const process = (command: Node) => {
     case "assign":
       variables.set(
         command.child(0).text,
-        Number.parseInt(command.child(2).text),
+        Number.parseInt(command.child(2).text, 10),
       );
       variableDef.set(command.child(0).text, command);
       break;
@@ -88,7 +87,7 @@ const process = (command: Node) => {
           actions: [
             {
               name: "Criar",
-              apply(view, from, to) {
+              apply(view, _from, _to) {
                 view.dispatch({
                   changes: {
                     from: view.state.doc.length,
@@ -130,7 +129,7 @@ const process = (command: Node) => {
           actions: [
             {
               name: "Criar",
-              apply(view, from, to) {
+              apply(view, _from, _to) {
                 view.dispatch({
                   changes: {
                     from: view.state.doc.length,
@@ -153,7 +152,7 @@ const process = (command: Node) => {
           actions: [
             {
               name: "Criar",
-              apply(view, from, to) {
+              apply(view, _from, _to) {
                 view.dispatch({
                   changes: { from: 0, to: 0, insert: `${controlVar} = 1;\n` },
                 });
@@ -260,7 +259,7 @@ export const treewalk = (tree: Tree) => {
   recursivo(blockMap);
   execute(blockMap.get(undefined));
 
-  threads.forEach((k, v) => {
+  threads.forEach((_k, v) => {
     if (v !== "0") {
       const t = threads.get(v)[0];
 
@@ -318,7 +317,7 @@ export const treewalk = (tree: Tree) => {
     } else {
       const calls = joinCalls.get(variable);
       const target = variableDef.get(variable);
-      const t = Number.parseInt(target.child(2).text);
+      const t = Number.parseInt(target.child(2).text, 10);
 
       if (calls !== t) {
         errors.push({
@@ -330,7 +329,7 @@ export const treewalk = (tree: Tree) => {
           actions: [
             {
               name: "Corrigir",
-              apply(view, from, to) {
+              apply(view, _from, _to) {
                 view.dispatch({
                   changes: {
                     from: target.child(2).startIndex,
