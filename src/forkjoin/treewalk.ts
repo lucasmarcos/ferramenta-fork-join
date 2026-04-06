@@ -244,11 +244,11 @@ const execute = (commands: any[]) => {
     const isQuit = command.children.some((c: any) => c.text === "QUIT");
     const isJoin = command.name === "Join";
 
-    if (isQuit) {
-      quit = true;
-    } else if (isJoin) {
+    if (isJoin) {
       quit = true;
       process(command);
+    } else if (isQuit) {
+      quit = true;
     } else {
       if (quit) {
         errors.push({
