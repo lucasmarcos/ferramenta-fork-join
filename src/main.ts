@@ -2,7 +2,6 @@ import { indentWithTab } from "@codemirror/commands";
 import {
   foldGutter,
   foldNodeProp,
-  foldService,
   LanguageSupport,
   LRLanguage,
 } from "@codemirror/language";
@@ -33,10 +32,7 @@ let currentMode: Mode = "fork-join";
 
 const editorViewElement = document.getElementById("editor")!;
 const graphContainer = document.getElementById("graph")!;
-const modeButtons = {
-  "fork-join": document.getElementById("mode-fork-join")!,
-  "parbegin-parend": document.getElementById("mode-parbegin-parend")!,
-};
+const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
 
 let editor: EditorView;
 const languageConf = new Compartment();
@@ -58,21 +54,8 @@ const getModeData = (mode: Mode) => {
   };
 };
 
-const updateUI = () => {
-  Object.entries(modeButtons).forEach(([mode, btn]) => {
-    if (mode === currentMode) {
-      btn.classList.add("bg-white", "shadow-sm", "text-slate-900");
-      btn.classList.remove("text-slate-500");
-    } else {
-      btn.classList.remove("bg-white", "shadow-sm", "text-slate-900");
-      btn.classList.add("text-slate-500");
-    }
-  });
-};
-
 const switchMode = (mode: Mode) => {
   currentMode = mode;
-  updateUI();
   const data = getModeData(mode);
 
   editor.dispatch({
@@ -85,15 +68,16 @@ const switchMode = (mode: Mode) => {
 
 const getLanguageSupport = (mode: Mode) => {
   const data = getModeData(mode);
-  const lezerParser = data.parser.configure({
-    props: [
-      mode === "fork-join" ? forkJoinHighlight : [],
-      foldNodeProp.add({
-        Def: (tree, _state) => ({ from: tree.from, to: tree.to }),
-        Begin: (tree, _state) => ({ from: tree.from, to: tree.to }),
-      }),
-    ],
-  });
+
+  const props = [
+    mode === "fork-join" ? forkJoinHighlight : null,
+    foldNodeProp.add({
+      Def: (tree, _state) => ({ from: tree.from, to: tree.to }),
+      Begin: (tree, _state) => ({ from: tree.from, to: tree.to }),
+    }),
+  ].filter((p) => p !== null);
+
+  const lezerParser = data.parser.configure({ props: props as any });
 
   const lang = LRLanguage.define({
     name: data.name,
@@ -151,7 +135,6 @@ const lint = linter((view) => {
     }
   }
 
-  go();
   return diagnostics;
 });
 
@@ -200,7 +183,8 @@ editor = new EditorView({
   doc: initialCode,
 });
 
-modeButtons["fork-join"].onclick = () => switchMode("fork-join");
-modeButtons["parbegin-parend"].onclick = () => switchMode("parbegin-parend");
+modeSelect.onchange = () => {
+  switchMode(modeSelect.value as Mode);
+};
 
 go();

@@ -67,7 +67,7 @@ const mapCommand = (doc: string, cursor: TreeCursor) => {
       cursor.parent();
     }
 
-    blockMap.get(currentBlock)!.push(cmd);
+    blockMap.get(currentBlock)?.push(cmd);
   }
 };
 
@@ -88,11 +88,11 @@ const process = (command: any) => {
         (c: any) => c.name === "Number",
       )?.text;
       if (label && numStr) {
-        variables.set(label, Number.parseInt(numStr));
+        variables.set(label, Number.parseInt(numStr, 10));
         variableDef.set(label, {
           start: command.from,
           end: command.to,
-          value: Number.parseInt(numStr),
+          value: Number.parseInt(numStr, 10),
         });
       }
       break;
@@ -105,8 +105,8 @@ const process = (command: any) => {
           execute(blockMap.get(label)!);
         } else {
           threads
-            .get(currentThread)!
-            .push({ id: crypto.randomUUID(), label: label });
+            .get(currentThread)
+            ?.push({ id: crypto.randomUUID(), label: label });
         }
       }
       break;
@@ -117,7 +117,7 @@ const process = (command: any) => {
 
       if (label && blockMap.has(label)) {
         const id = crypto.randomUUID();
-        threads.get(currentThread)!.push({ forkTo: id });
+        threads.get(currentThread)?.push({ forkTo: id });
         threads.set(id, [{ fork: label }]);
       } else if (label) {
         errors.push({
@@ -127,7 +127,7 @@ const process = (command: any) => {
           actions: [
             {
               name: "Criar",
-              apply(view, from, to) {
+              apply(view, _from, _to) {
                 view.dispatch({
                   changes: {
                     from: view.state.doc.length,
@@ -160,7 +160,7 @@ const process = (command: any) => {
         }
 
         if (controlVar) {
-          threads.get(currentThread)!.push({ joinOn: controlVar });
+          threads.get(currentThread)?.push({ joinOn: controlVar });
           threads.set(controlVar, [{ join: targetLabel }]);
         }
       } else if (targetLabel) {
@@ -171,7 +171,7 @@ const process = (command: any) => {
           actions: [
             {
               name: "Criar",
-              apply(view, from, to) {
+              apply(view, _from, _to) {
                 view.dispatch({
                   changes: {
                     from: view.state.doc.length,
@@ -193,7 +193,7 @@ const process = (command: any) => {
           actions: [
             {
               name: "Criar",
-              apply(view, from, to) {
+              apply(view, _from, _to) {
                 view.dispatch({
                   changes: { from: 0, to: 0, insert: `${controlVar} = 1;\n` },
                 });
@@ -299,7 +299,7 @@ export const treewalk = (doc: string, tree: Tree) => {
 
   threads.forEach((_k, v) => {
     if (v !== "0") {
-      const t = threads.get(v)![0];
+      const t = threads.get(v)?.[0];
 
       currentThread = v;
       threads.set(currentThread, []);
@@ -361,7 +361,7 @@ export const treewalk = (doc: string, tree: Tree) => {
           actions: [
             {
               name: "Corrigir",
-              apply(view, from, to) {
+              apply(view, _from, _to) {
                 // This is a bit tricky with the new structure, might need more info
                 view.dispatch({
                   changes: {
