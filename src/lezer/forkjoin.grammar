@@ -1,16 +1,16 @@
 @top Program { command* }
 
-command { Fork | Join | Def | Call | Assign }
+command { Fork | Join | Assign | Call | Def }
 
 Fork { @specialize<Label, "FORK"> Label ";" }
 
 Join { @specialize<Label, "JOIN"> Label "," Label "," Label ";" }
 
-Def { Label ":" }
+Assign { Label "=" Number ";" }
 
 Call { Label ";" }
 
-Assign { Label "=" Number ";" }
+Def { Label ":" }
 
 @skip { space | comment }
 
