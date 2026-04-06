@@ -1,0 +1,1 @@
+- nós com labels grandes não são mais ovais como deveriam ser
