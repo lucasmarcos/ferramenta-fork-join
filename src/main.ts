@@ -15,7 +15,7 @@ import type { LRParser } from "@lezer/lr";
 import { basicSetup } from "codemirror";
 import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
 import { forkJoinHighlight } from "./highlight.js";
-import exemploInicialParbeginParend from "./parbeginparend/exemplo.js";
+import { exemploInicialParbeginParend } from "./parbeginparend/exemplo.js";
 import { resolve } from "./resolve.js";
 import { checkSyntax } from "./syntax.js";
 import { type IError, treewalk } from "./treewalk.js";
@@ -147,7 +147,7 @@ const updated = EditorView.updateListener.of((update) => {
 });
 
 const share = decodeURI(document.location.hash.substring(1));
-const code = share ? share : exemploInicial;
+const code = share ? share : exemploInicialForkJoin;
 
 (async () => {
   lezerForkJoinParser = lezerParser.configure({
