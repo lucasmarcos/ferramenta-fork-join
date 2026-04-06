@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
+    "rootDir": "./src/",
     "outDir": "./out/",
     "target": "esnext",
-    "module": "nodenext",
-    "types": ["@types/emscripten"]
+    "module": "nodenext"
   }
 }

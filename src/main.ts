@@ -1,20 +1,18 @@
 import type { CompletionContext } from "@codemirror/autocomplete";
 import { indentWithTab } from "@codemirror/commands";
 import {
-  LRLanguage,
-  LanguageSupport,
   foldGutter,
   foldNodeProp,
   foldService,
+  LanguageSupport,
+  LRLanguage,
 } from "@codemirror/language";
-import { type Diagnostic, lintGutter, linter } from "@codemirror/lint";
 import type { Severity } from "@codemirror/lint";
+import { type Diagnostic, linter, lintGutter } from "@codemirror/lint";
 import type { EditorState } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import type { LRParser } from "@lezer/lr";
 import { basicSetup } from "codemirror";
-import graphviz from "graphviz-wasm";
-import { Language, Parser, type Tree } from "web-tree-sitter";
 import { parser as lezerParser } from "../src/lezerParser.js";
 import { exemploInicial } from "./exemplo.js";
 import { forkJoinHighlight } from "./highlight.js";
@@ -219,7 +217,7 @@ const code = share ? share : exemploInicial;
   };
 
   const forkJoinCompletions = (context: CompletionContext) => {
-    const word = context.matchBefore(/[a-zA-Z_\'][a-zA-Z_\'0-9]*/);
+    const word = context.matchBefore(/[a-zA-Z_'][a-zA-Z_'0-9]*/);
     if (!word) return null;
 
     if (word.from === word.to && !context.explicit) return null;
@@ -233,7 +231,7 @@ const code = share ? share : exemploInicial;
     return {
       from: word.from,
       options,
-      validFor: /^[a-zA-Z_\'][a-zA-Z_\'0-9]*$/,
+      validFor: /^[a-zA-Z_'][a-zA-Z_'0-9]*$/,
     };
   };
 
