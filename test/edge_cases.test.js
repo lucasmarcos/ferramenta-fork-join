@@ -50,7 +50,6 @@ QUIT;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // The system might handle this gracefully or report an error
   assert.ok(walked.threads, "Should handle undefined label reference");
 });
 
@@ -70,16 +69,16 @@ DUP:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // Should handle duplicate labels somehow
   assert.ok(walked.threads, "Should process even with duplicate labels");
 });
 
 test("JOIN without corresponding label", () => {
   const code = `
-A;
-JOIN NOWHERE;
-QUIT;
+    A;
+    JOIN VAR_B, ROT_B, QUIT;
+    QUIT;
   `;
+
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
@@ -88,15 +87,17 @@ QUIT;
 
 test("very long label name", () => {
   const longLabel = "A".repeat(100);
+  
   const code = `
-START;
-FORK ${longLabel};
-QUIT;
+    START;
+    FORK ${longLabel};
+    QUIT;
 
-${longLabel}:
-  END;
-  QUIT;
+    ${longLabel}:
+      END;
+      QUIT;
   `;
+
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
@@ -105,9 +106,9 @@ ${longLabel}:
 
 test("special characters in commands", () => {
   const code = `
-A_B_C;
-X123;
-QUIT;
+    A_B_C;
+    X123;
+    QUIT;
   `;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
@@ -126,24 +127,25 @@ QUIT;
 
 test("consecutive FORKs", () => {
   const code = `
-A;
-FORK B_LABEL;
-FORK C_LABEL;
-FORK D_LABEL;
-QUIT;
+    A;
+    FORK B_LABEL;
+    FORK C_LABEL;
+    FORK D_LABEL;
+    QUIT;
 
-B_LABEL:
-  B;
-  QUIT;
+    B_LABEL:
+      B;
+      QUIT;
 
-C_LABEL:
-  C;
-  QUIT;
+    C_LABEL:
+      C;
+      QUIT;
 
-D_LABEL:
-  D;
-  QUIT;
+    D_LABEL:
+      D;
+      QUIT;
   `;
+
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
@@ -176,7 +178,6 @@ UNREACHABLE:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // After QUIT, subsequent commands in same block shouldn't execute
   assert.ok(walked.threads, "Should parse structure");
 });
 
@@ -185,7 +186,6 @@ test("syntax error detection", () => {
   const tree = parser.parse(code);
   const errors = checkSyntax(tree);
 
-  // Should detect syntax errors
   assert.ok(Array.isArray(errors), "Should return errors array");
 });
 
@@ -194,7 +194,6 @@ test("missing semicolons", () => {
   const tree = parser.parse(code);
   const errors = error(tree);
 
-  // Missing semicolons should be detected
   assert.ok(errors.length > 0, "Should detect missing semicolons");
 });
 
@@ -208,7 +207,6 @@ QUIT;
   const tree = parser.parse(code);
   const syntaxErrors = checkSyntax(tree);
 
-  // Parser may handle some cases gracefully
   assert.ok(Array.isArray(syntaxErrors), "Should return errors array");
 });
 
@@ -245,7 +243,6 @@ QUIT;
 
   const nodes = elements.filter((e) => !e.data.source);
 
-  // Short labels might get ellipse shape
   const nodeX = nodes.find((n) => n.data.label === "X");
   assert.ok(nodeX, "Should have node X");
 });
@@ -260,6 +257,5 @@ QUIT;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // Multiple QUITs shouldn't cause crashes
   assert.ok(walked.threads, "Should handle multiple QUITs");
 });

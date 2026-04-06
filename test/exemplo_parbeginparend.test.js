@@ -60,7 +60,6 @@ test("exemplo.ts: exploInicialParbeginParend demonstrates educational content", 
   const tree = parser.parse(exploInicialParbeginParend);
   assert.ok(tree, "Should parse successfully for educational use");
 
-  // Should have both sequential and parallel constructs
   assert.ok(
     exploInicialParbeginParend.includes("BEGIN"),
     "Should demonstrate sequential blocks",
@@ -70,7 +69,6 @@ test("exemplo.ts: exploInicialParbeginParend demonstrates educational content", 
     "Should demonstrate parallel blocks",
   );
 
-  // Should have multiple commands
   const commandPattern = /[A-Z];/g;
   const commands = exploInicialParbeginParend.match(commandPattern);
   assert.ok(

@@ -26,10 +26,7 @@ ROT_D:
   assert.ok(nodeA, "A exists");
   assert.ok(nodeD, "D exists");
 
-  // When FORK is at the very beginning, both A and D are independent starting points
-  // They have no predecessor, so D won't have an incoming edge
   assert.strictEqual(nodes.length, 2, "Should have 2 nodes");
 
-  // Both threads start independently
   assert.ok(walked.threads.size >= 2, "Should have at least 2 threads");
 });

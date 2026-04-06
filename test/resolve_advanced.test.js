@@ -18,7 +18,6 @@ QUIT;
   const _nodes = elements.filter((e) => e.data.id && e.data.label);
   const edges = elements.filter((e) => e.data.source && e.data.target);
 
-  // Should have edges A->B and B->C
   assert.strictEqual(
     edges.length,
     2,
@@ -27,7 +26,6 @@ QUIT;
 });
 
 test("resolve handles fork with join synchronization", () => {
-  // JOIN requires control variables in current implementation
   const code = `
 VAR_SYNC = 2;
 
@@ -66,7 +64,6 @@ QUIT;
 
   const nodes = elements.filter((e) => e.data.id && e.data.label);
 
-  // Labels <= 2 chars should get ellipse, others round-rectangle
   const shortNode = nodes.find((n) => n.data.label === "AB");
   const longNode = nodes.find((n) => n.data.label === "VERYLONGNAME");
 
@@ -96,7 +93,6 @@ EMPTY:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  // Should handle thread with no actual work
   assert.ok(Array.isArray(elements));
 });
 
@@ -119,7 +115,6 @@ A_LABEL:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  // Should handle without infinite loop
   assert.ok(Array.isArray(elements));
   assert.ok(elements.length > 0);
 });
@@ -184,7 +179,6 @@ QUIT;
 });
 
 test("resolve handles alternating fork and join", () => {
-  // Complex multi-stage JOIN patterns with control variables
   const code = `
 VAR_SYNC1 = 2;
 VAR_SYNC2 = 2;
@@ -252,6 +246,5 @@ SYNC:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  // Worker thread joins immediately without doing work
   assert.ok(Array.isArray(elements));
 });

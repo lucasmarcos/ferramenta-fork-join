@@ -18,13 +18,6 @@ ROT_D:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  // We expect:
-  // 1. A node for A
-  // 2. A node for B
-  // 3. A node for D
-  // 4. Edge A -> B
-  // 5. Edge A -> D (The Fork)
-
   const nodes = elements.filter((e) => !e.data.source);
   const edges = elements.filter((e) => e.data.source);
 

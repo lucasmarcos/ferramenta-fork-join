@@ -68,36 +68,31 @@ C_LABEL:
   );
 });
 
-test("JOIN synchronizes threads - basic case", () => {
-  // Note: Current JOIN implementation has limitations with control variables
-  // This test verifies basic JOIN structure is captured
+test("join basic case", () => {
   const code = `
-A;
-FORK B_LABEL;
-JOIN SYNC;
-QUIT;
+    VAR_C = 2;
+    
+    A;
+    FORK ROT_B;
+    JOIN VAR_C, ROT_C, QUIT;
 
-B_LABEL:
-  B;
-  JOIN SYNC;
-  QUIT;
+    ROT_B:
+      B;
+      JOIN VAR_C, ROT_C, QUIT;
 
-SYNC:
-  C;
-  QUIT;
+    ROT_C:
+      C;
   `;
+
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
   const nodes = elements.filter((e) => !e.data.source);
-  // JOIN creates threads but current implementation may not fully resolve all nodes
   assert.ok(nodes.length > 0, "Should have some nodes");
 });
 
 test("complex pattern with multiple forks and joins", () => {
-  // Note: This tests complex JOIN patterns which require control variables
-  // Current implementation requires VAR_J style control variables
   const code = `
 VAR_BARRIER = 3;
 
@@ -117,7 +112,8 @@ T2:
 
 BARRIER:
   FINAL;
-  `;
+`;
+
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
