@@ -1,8 +1,8 @@
-import { test } from "node:test";
 import assert from "node:assert";
+import { test } from "node:test";
 import { parser } from "../out/forkJoinParser.js";
-import { treewalk } from "../out/forkjoin/treewalk.js";
 import { resolve } from "../out/forkjoin/resolve.js";
+import { treewalk } from "../out/forkjoin/treewalk.js";
 
 test("nested FORK creates multiple branches", () => {
   const code = `
@@ -24,8 +24,8 @@ D_LABEL:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter(e => !e.data.source);
-  const nodeLabels = nodes.map(n => n.data.label);
+  const nodes = elements.filter((e) => !e.data.source);
+  const nodeLabels = nodes.map((n) => n.data.label);
 
   assert.ok(nodeLabels.includes("A"), "Should have node A");
   assert.ok(nodeLabels.includes("B"), "Should have node B");
@@ -53,10 +53,19 @@ C_LABEL:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter(e => !e.data.source);
-  assert.ok(nodes.some(n => n.data.label === "B"), "Should have forked to B");
-  assert.ok(nodes.some(n => n.data.label === "C"), "Should have forked to C");
-  assert.ok(nodes.some(n => n.data.label === "D"), "Should have D in main thread");
+  const nodes = elements.filter((e) => !e.data.source);
+  assert.ok(
+    nodes.some((n) => n.data.label === "B"),
+    "Should have forked to B",
+  );
+  assert.ok(
+    nodes.some((n) => n.data.label === "C"),
+    "Should have forked to C",
+  );
+  assert.ok(
+    nodes.some((n) => n.data.label === "D"),
+    "Should have D in main thread",
+  );
 });
 
 test("JOIN synchronizes threads - basic case", () => {
@@ -81,7 +90,7 @@ SYNC:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter(e => !e.data.source);
+  const nodes = elements.filter((e) => !e.data.source);
   // JOIN creates threads but current implementation may not fully resolve all nodes
   assert.ok(nodes.length > 0, "Should have some nodes");
 });
@@ -111,14 +120,26 @@ BARRIER:
   `;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
-  
+
   const elements = resolve(walked.threads);
-  const nodes = elements.filter(e => !e.data.source);
-  
-  assert.ok(nodes.some(n => n.data.label === "START"), "Should have START");
-  assert.ok(nodes.some(n => n.data.label === "T1_WORK"), "Should have T1_WORK");
-  assert.ok(nodes.some(n => n.data.label === "T2_WORK"), "Should have T2_WORK");
-  assert.ok(nodes.some(n => n.data.label === "FINAL"), "Should have FINAL");
+  const nodes = elements.filter((e) => !e.data.source);
+
+  assert.ok(
+    nodes.some((n) => n.data.label === "START"),
+    "Should have START",
+  );
+  assert.ok(
+    nodes.some((n) => n.data.label === "T1_WORK"),
+    "Should have T1_WORK",
+  );
+  assert.ok(
+    nodes.some((n) => n.data.label === "T2_WORK"),
+    "Should have T2_WORK",
+  );
+  assert.ok(
+    nodes.some((n) => n.data.label === "FINAL"),
+    "Should have FINAL",
+  );
 });
 
 test("sequential commands in thread", () => {
@@ -133,8 +154,8 @@ QUIT;
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter(e => !e.data.source);
-  const edges = elements.filter(e => e.data.source);
+  const nodes = elements.filter((e) => !e.data.source);
+  const edges = elements.filter((e) => e.data.source);
 
   assert.strictEqual(nodes.length, 4, "Should have 4 nodes");
   assert.ok(edges.length >= 3, "Should have edges connecting sequential nodes");
@@ -171,7 +192,11 @@ EMPTY:
   `;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
-  assert.strictEqual(walked.errors.length, 0, "Empty block should not cause errors");
+  assert.strictEqual(
+    walked.errors.length,
+    0,
+    "Empty block should not cause errors",
+  );
 });
 
 test("thread with single command", () => {
@@ -183,7 +208,7 @@ QUIT;
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter(e => !e.data.source);
+  const nodes = elements.filter((e) => !e.data.source);
   assert.strictEqual(nodes.length, 1, "Should have exactly one node");
   assert.strictEqual(nodes[0].data.label, "ONLY_ONE");
 });

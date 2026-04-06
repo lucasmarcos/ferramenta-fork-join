@@ -1,7 +1,13 @@
 import type { Tree } from "@lezer/common";
 
-export const checkSyntax = (tree: Tree) => {
-  const errors: any[] = [];
+interface SyntaxError {
+  message: string;
+  start: number;
+  end: number;
+}
+
+export const checkSyntax = (tree: Tree): SyntaxError[] => {
+  const errors: SyntaxError[] = [];
 
   const cursor = tree.cursor();
 

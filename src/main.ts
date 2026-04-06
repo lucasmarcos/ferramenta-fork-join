@@ -29,9 +29,13 @@ import { stackify as stackifyParbeginParend } from "./parbeginparend/stack.js";
 type Mode = "fork-join" | "parbegin-parend";
 let currentMode: Mode = "fork-join";
 
-const editorViewElement = document.getElementById("editor")!;
-const graphContainer = document.getElementById("graph")!;
+const editorViewElement = document.getElementById("editor");
+const graphContainer = document.getElementById("graph");
 const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
+
+if (!editorViewElement || !graphContainer) {
+  throw new Error("Required DOM elements not found");
+}
 
 let editor: EditorView;
 const languageConf = new Compartment();
@@ -76,7 +80,7 @@ const getLanguageSupport = (mode: Mode) => {
     }),
   ].filter((p) => p !== null);
 
-  const lezerParser = data.parser.configure({ props: props as any });
+  const lezerParser = data.parser.configure({ props: props as unknown[] });
 
   const lang = LRLanguage.define({
     name: data.name,
@@ -126,7 +130,7 @@ const lint = linter((view) => {
       for (const err of walked.errors) {
         diagnostics.push({
           message: err.message,
-          severity: (err.severity as any) || "error",
+          severity: (err.severity as "error" | "warning" | "info") || "error",
           from: err.start || 0,
           to: err.end || 0,
         });
@@ -142,7 +146,17 @@ const go = () => {
   document.location.hash = encodeURI(code);
   if (!code) return;
 
-  let elements: any[] = [];
+  interface GraphElement {
+    data: {
+      id?: string;
+      label?: string;
+      source?: string;
+      target?: string;
+      shape?: string;
+    };
+  }
+
+  let elements: GraphElement[] = [];
 
   if (currentMode === "fork-join") {
     const tree = forkJoinParser.parse(code);

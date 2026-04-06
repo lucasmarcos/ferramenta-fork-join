@@ -1,5 +1,5 @@
-import { test } from "node:test";
 import assert from "node:assert";
+import { test } from "node:test";
 import { parser } from "../out/forkJoinParser.js";
 import { checkSyntax } from "../out/forkjoin/syntax.js";
 

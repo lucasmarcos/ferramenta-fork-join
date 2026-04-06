@@ -1,7 +1,16 @@
 import type { StackNode } from "./stack.js";
 
-export const interpret = (stack: StackNode) => {
-  const elements: any[] = [];
+interface GraphElement {
+  data: {
+    id?: string;
+    label?: string;
+    source?: string;
+    target?: string;
+  };
+}
+
+export const interpret = (stack: StackNode): GraphElement[] => {
+  const elements: GraphElement[] = [];
 
   const process = (
     node: StackNode,
@@ -9,45 +18,44 @@ export const interpret = (stack: StackNode) => {
   ): StackNode[] => {
     if (!node) return [];
 
-    switch (node.type) {
-      case "call":
-        elements.push({ data: { id: node.id, label: node.label } });
+    if (node.type === "call") {
+      elements.push({ data: { id: node.id, label: node.label } });
 
-        for (const source of dependsOn) {
+      for (const source of dependsOn) {
+        if (source.type === "call") {
           elements.push({ data: { source: source.id, target: node.id } });
         }
-
-        return [node];
-
-      case "seq": {
-        let currentDeps = [...dependsOn];
-
-        if (Array.isArray(node.child)) {
-          for (const childNode of node.child) {
-            currentDeps = process(childNode, currentDeps);
-          }
-        }
-
-        return currentDeps;
       }
 
-      case "par": {
-        let allOutputs: StackNode[] = [];
-
-        if (Array.isArray(node.child)) {
-          for (const branch of node.child) {
-            const branchOutputs = process(branch, dependsOn);
-            allOutputs = [...allOutputs, ...branchOutputs];
-          }
-        }
-
-        return allOutputs;
-      }
-
-      default: {
-        return dependsOn;
-      }
+      return [node];
     }
+
+    if (node.type === "seq") {
+      let currentDeps = [...dependsOn];
+
+      if (Array.isArray(node.child)) {
+        for (const childNode of node.child) {
+          currentDeps = process(childNode, currentDeps);
+        }
+      }
+
+      return currentDeps;
+    }
+
+    if (node.type === "par") {
+      let allOutputs: StackNode[] = [];
+
+      if (Array.isArray(node.child)) {
+        for (const branch of node.child) {
+          const branchOutputs = process(branch, dependsOn);
+          allOutputs = [...allOutputs, ...branchOutputs];
+        }
+      }
+
+      return allOutputs;
+    }
+
+    return dependsOn;
   };
 
   process(stack);

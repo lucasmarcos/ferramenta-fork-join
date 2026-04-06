@@ -19,7 +19,14 @@ export interface IError {
   severity?: string;
 }
 
-let blockMap: Map<string, any[]>;
+interface ParsedCommand {
+  name: string;
+  from: number;
+  to: number;
+  children: Array<{ name: string; from: number; to: number; text: string }>;
+}
+
+let blockMap: Map<string, ParsedCommand[]>;
 let currentBlock: string;
 let variables: Map<string, number>;
 let variableDef: Map<string, { start: number; end: number; value: number }>;
@@ -39,22 +46,21 @@ const getLabelText = (doc: string, cursor: TreeCursor): string => {
 
 const mapCommand = (doc: string, cursor: TreeCursor) => {
   if (cursor.name === "Def") {
-    cursor.firstChild(); // Label
+    cursor.firstChild();
     currentBlock = getLabelText(doc, cursor);
     cursor.parent();
   } else {
     if (!blockMap.has(currentBlock)) {
       blockMap.set(currentBlock, []);
     }
-    // Store cursor state/positions or a simplified command object
-    const cmd: any = {
+
+    const cmd: ParsedCommand = {
       name: cursor.name,
       from: cursor.from,
       to: cursor.to,
       children: [],
     };
 
-    // Capture necessary child info while cursor is at the command
     if (cursor.firstChild()) {
       do {
         cmd.children.push({
@@ -80,13 +86,11 @@ const doMap = (doc: string, tree: Tree) => {
   } while (cursor.nextSibling());
 };
 
-const process = (command: any) => {
+const process = (command: ParsedCommand) => {
   switch (command.name) {
     case "Assign": {
-      const label = command.children.find((c: any) => c.name === "Label")?.text;
-      const numStr = command.children.find(
-        (c: any) => c.name === "Number",
-      )?.text;
+      const label = command.children.find((c) => c.name === "Label")?.text;
+      const numStr = command.children.find((c) => c.name === "Number")?.text;
       if (label && numStr) {
         variables.set(label, Number.parseInt(numStr, 10));
         variableDef.set(label, {
@@ -99,21 +103,22 @@ const process = (command: any) => {
     }
 
     case "Call": {
-      const label = command.children.find((c: any) => c.name === "Label")?.text;
+      const label = command.children.find((c) => c.name === "Label")?.text;
       if (label) {
         if (blockMap.has(label)) {
-          execute(blockMap.get(label)!);
+          execute(blockMap.get(label) ?? []);
         } else {
-          threads
-            .get(currentThread)
-            ?.push({ id: crypto.randomUUID(), label: label });
+          const thread = threads.get(currentThread);
+          if (thread) {
+            thread.push({ id: crypto.randomUUID(), label: label });
+          }
         }
       }
       break;
     }
 
     case "Fork": {
-      const label = command.children.find((c: any) => c.name === "Label")?.text;
+      const label = command.children.find((c) => c.name === "Label")?.text;
 
       if (label && blockMap.has(label)) {
         const id = crypto.randomUUID();
@@ -144,15 +149,15 @@ const process = (command: any) => {
     }
 
     case "Join": {
-      const labels = command.children.filter((c: any) => c.name === "Label");
+      const labels = command.children.filter((c) => c.name === "Label");
       const controlVar = labels[0]?.text;
       const targetLabel = labels[1]?.text;
-      const quitNode = command.children.find((c: any) => c.text === "QUIT");
+      const quitNode = command.children.find((c) => c.text === "QUIT");
 
       if (targetLabel && blockMap.has(targetLabel)) {
         if (!secondRound) {
           if (controlVar && joinCalls.has(controlVar)) {
-            const calls = joinCalls.get(controlVar)!;
+            const calls = joinCalls.get(controlVar) ?? 0;
             joinCalls.set(controlVar, calls + 1);
           } else if (controlVar) {
             joinCalls.set(controlVar, 1);
@@ -160,7 +165,10 @@ const process = (command: any) => {
         }
 
         if (controlVar) {
-          threads.get(currentThread)?.push({ joinOn: controlVar });
+          const thread = threads.get(currentThread);
+          if (thread) {
+            thread.push({ joinOn: controlVar });
+          }
           threads.set(controlVar, [{ join: targetLabel }]);
         }
       } else if (targetLabel) {
@@ -225,7 +233,7 @@ const process = (command: any) => {
   }
 };
 
-const execute = (commands: any[]) => {
+const execute = (commands: ParsedCommand[]) => {
   depth++;
 
   let quit = false;
@@ -241,7 +249,7 @@ const execute = (commands: any[]) => {
   }
 
   for (const command of commands) {
-    const isQuit = command.children.some((c: any) => c.text === "QUIT");
+    const isQuit = command.children.some((c) => c.text === "QUIT");
     const isJoin = command.name === "Join";
 
     if (isJoin) {
@@ -306,9 +314,9 @@ export const treewalk = (doc: string, tree: Tree) => {
 
       if (t) {
         if (t.fork && blockMap.has(t.fork)) {
-          execute(blockMap.get(t.fork)!);
+          execute(blockMap.get(t.fork) ?? []);
         } else if (t.join && blockMap.has(t.join)) {
-          execute(blockMap.get(t.join)!);
+          execute(blockMap.get(t.join) ?? []);
         }
       }
     }
@@ -321,11 +329,11 @@ export const treewalk = (doc: string, tree: Tree) => {
       if (k[0]?.fork && blockMap.has(k[0].fork)) {
         currentThread = v;
         threads.set(currentThread, []);
-        execute(blockMap.get(k[0].fork)!);
+        execute(blockMap.get(k[0].fork) ?? []);
       } else if (k[0]?.join && blockMap.has(k[0].join)) {
         currentThread = v;
         threads.set(currentThread, []);
-        execute(blockMap.get(k[0].join)!);
+        execute(blockMap.get(k[0].join) ?? []);
       }
     });
   }
@@ -349,7 +357,7 @@ export const treewalk = (doc: string, tree: Tree) => {
         ],
       });
     } else {
-      const calls = joinCalls.get(variable)!;
+      const calls = joinCalls.get(variable) ?? 0;
       const t = def.value;
 
       if (calls !== t) {
@@ -362,7 +370,6 @@ export const treewalk = (doc: string, tree: Tree) => {
             {
               name: "Corrigir",
               apply(view, _from, _to) {
-                // This is a bit tricky with the new structure, might need more info
                 view.dispatch({
                   changes: {
                     from: def.start,

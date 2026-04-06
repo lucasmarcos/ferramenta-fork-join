@@ -1,7 +1,17 @@
 import type { Command } from "./treewalk.js";
 
-export const resolve = (threads: Map<string, Command[]>) => {
-  const elements: any[] = [];
+interface GraphElement {
+  data: {
+    id?: string;
+    label?: string;
+    shape?: string;
+    source?: string;
+    target?: string;
+  };
+}
+
+export const resolve = (threads: Map<string, Command[]>): GraphElement[] => {
+  const elements: GraphElement[] = [];
   let latest: string | undefined;
 
   threads.forEach((_k, v) => {

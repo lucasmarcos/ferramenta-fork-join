@@ -1,7 +1,15 @@
 import type { Tree } from "@lezer/common";
 
-export const error = (tree: Tree) => {
-  const out: any[] = [];
+interface ErrorInfo {
+  from?: number;
+  to?: number;
+  message?: string;
+  start?: number;
+  end?: number;
+}
+
+export const error = (tree: Tree): ErrorInfo[] => {
+  const out: ErrorInfo[] = [];
   const cursor = tree.cursor();
 
   const process = () => {

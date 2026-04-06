@@ -1,7 +1,7 @@
-import { test } from "node:test";
 import assert from "node:assert";
-import { parser } from "../out/forkJoinParser.js";
+import { test } from "node:test";
 import { error } from "../out/error.js";
+import { parser } from "../out/forkJoinParser.js";
 
 test("detecta erro", () => {
   const code = "FORK ;";

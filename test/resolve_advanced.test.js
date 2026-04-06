@@ -1,8 +1,8 @@
-import { test } from "node:test";
 import assert from "node:assert";
+import { test } from "node:test";
 import { parser } from "../out/forkJoinParser.js";
-import { treewalk } from "../out/forkjoin/treewalk.js";
 import { resolve } from "../out/forkjoin/resolve.js";
+import { treewalk } from "../out/forkjoin/treewalk.js";
 
 test("resolve creates correct edge connections", () => {
   const code = `
@@ -14,12 +14,16 @@ QUIT;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-  
-  const nodes = elements.filter(e => e.data.id && e.data.label);
-  const edges = elements.filter(e => e.data.source && e.data.target);
-  
+
+  const _nodes = elements.filter((e) => e.data.id && e.data.label);
+  const edges = elements.filter((e) => e.data.source && e.data.target);
+
   // Should have edges A->B and B->C
-  assert.strictEqual(edges.length, 2, "Should have 2 edges for 3 sequential nodes");
+  assert.strictEqual(
+    edges.length,
+    2,
+    "Should have 2 edges for 3 sequential nodes",
+  );
 });
 
 test("resolve handles fork with join synchronization", () => {
@@ -42,10 +46,10 @@ SYNC:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-  
-  const nodes = elements.filter(e => e.data.id && e.data.label);
-  const finalNode = nodes.find(n => n.data.label === "FINAL");
-  
+
+  const nodes = elements.filter((e) => e.data.id && e.data.label);
+  const finalNode = nodes.find((n) => n.data.label === "FINAL");
+
   assert.ok(finalNode, "Should have FINAL node as sync point");
 });
 
@@ -59,15 +63,23 @@ QUIT;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-  
-  const nodes = elements.filter(e => e.data.id && e.data.label);
-  
+
+  const nodes = elements.filter((e) => e.data.id && e.data.label);
+
   // Labels <= 2 chars should get ellipse, others round-rectangle
-  const shortNode = nodes.find(n => n.data.label === "AB");
-  const longNode = nodes.find(n => n.data.label === "VERYLONGNAME");
-  
-  assert.strictEqual(shortNode?.data.shape, "ellipse", "Short labels should be ellipse");
-  assert.strictEqual(longNode?.data.shape, "round-rectangle", "Long labels should be round-rectangle");
+  const shortNode = nodes.find((n) => n.data.label === "AB");
+  const longNode = nodes.find((n) => n.data.label === "VERYLONGNAME");
+
+  assert.strictEqual(
+    shortNode?.data.shape,
+    "ellipse",
+    "Short labels should be ellipse",
+  );
+  assert.strictEqual(
+    longNode?.data.shape,
+    "round-rectangle",
+    "Long labels should be round-rectangle",
+  );
 });
 
 test("resolve handles thread with only QUIT", () => {
@@ -83,7 +95,7 @@ EMPTY:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-  
+
   // Should handle thread with no actual work
   assert.ok(Array.isArray(elements));
 });
@@ -106,7 +118,7 @@ A_LABEL:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-  
+
   // Should handle without infinite loop
   assert.ok(Array.isArray(elements));
   assert.ok(elements.length > 0);
@@ -131,12 +143,21 @@ T2:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-  
-  const nodes = elements.filter(e => e.data.id && e.data.label);
-  
-  assert.ok(nodes.some(n => n.data.label === "X"), "T1 should have X");
-  assert.ok(nodes.some(n => n.data.label === "Y"), "T2 should have Y");
-  assert.ok(nodes.some(n => n.data.label === "MAIN"), "Main thread should continue");
+
+  const nodes = elements.filter((e) => e.data.id && e.data.label);
+
+  assert.ok(
+    nodes.some((n) => n.data.label === "X"),
+    "T1 should have X",
+  );
+  assert.ok(
+    nodes.some((n) => n.data.label === "Y"),
+    "T2 should have Y",
+  );
+  assert.ok(
+    nodes.some((n) => n.data.label === "MAIN"),
+    "Main thread should continue",
+  );
 });
 
 test("resolve generates unique IDs for all nodes", () => {
@@ -150,12 +171,16 @@ QUIT;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-  
-  const nodes = elements.filter(e => e.data.id && e.data.label);
-  const ids = nodes.map(n => n.data.id);
+
+  const nodes = elements.filter((e) => e.data.id && e.data.label);
+  const ids = nodes.map((n) => n.data.id);
   const uniqueIds = new Set(ids);
-  
-  assert.strictEqual(ids.length, uniqueIds.size, "All node IDs should be unique");
+
+  assert.strictEqual(
+    ids.length,
+    uniqueIds.size,
+    "All node IDs should be unique",
+  );
 });
 
 test("resolve handles alternating fork and join", () => {
@@ -187,10 +212,10 @@ SYNC2:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-  
-  const nodes = elements.filter(e => e.data.id && e.data.label);
-  const labels = nodes.map(n => n.data.label);
-  
+
+  const nodes = elements.filter((e) => e.data.id && e.data.label);
+  const labels = nodes.map((n) => n.data.label);
+
   assert.ok(labels.includes("A"), "Should have A");
   assert.ok(labels.includes("B"), "Should have B");
   assert.ok(labels.includes("C"), "Should have C");
@@ -200,13 +225,11 @@ SYNC2:
 
 test("resolve with command that has no connections", () => {
   const threads = new Map();
-  threads.set("0", [
-    { id: "1", label: "ISOLATED", forks: [], joins: [] }
-  ]);
-  
+  threads.set("0", [{ id: "1", label: "ISOLATED", forks: [], joins: [] }]);
+
   const elements = resolve(threads);
-  const nodes = elements.filter(e => e.data.id && e.data.label);
-  
+  const nodes = elements.filter((e) => e.data.id && e.data.label);
+
   assert.strictEqual(nodes.length, 1);
   assert.strictEqual(nodes[0].data.label, "ISOLATED");
 });
@@ -228,7 +251,7 @@ SYNC:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-  
+
   // Worker thread joins immediately without doing work
   assert.ok(Array.isArray(elements));
 });

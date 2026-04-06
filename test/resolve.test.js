@@ -1,8 +1,8 @@
-import { test } from "node:test";
 import assert from "node:assert";
+import { test } from "node:test";
 import { parser } from "../out/forkJoinParser.js";
-import { treewalk } from "../out/forkjoin/treewalk.js";
 import { resolve } from "../out/forkjoin/resolve.js";
+import { treewalk } from "../out/forkjoin/treewalk.js";
 
 test("resolve", () => {
   const code = "FORK l; l: QUIT;";
