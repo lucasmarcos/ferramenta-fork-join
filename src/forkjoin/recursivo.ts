@@ -17,6 +17,5 @@ export const recursivo = (blockMap: Map<string, any[]>) => {
     calls.set(blockName, callsSet);
   }
 
-  // Basic cycle detection or just returning
   return calls;
 };

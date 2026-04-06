@@ -32,7 +32,6 @@ export const resolve = (threads: Map<string, Command[]>) => {
           elements.push({ data: { source: latest, target: lead.id } });
         }
       } else if (command.label) {
-        // Create node
         elements.push({
           data: {
             id: command.id,

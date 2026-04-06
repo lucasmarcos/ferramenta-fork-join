@@ -10,7 +10,6 @@ import { Compartment } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import type { Tree } from "@lezer/common";
 import { basicSetup } from "codemirror";
-
 import { parser as forkJoinParser } from "./forkJoinParser.js";
 import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
 import { resolve as resolveForkJoin } from "./forkjoin/resolve.js";
@@ -163,7 +162,6 @@ const go = () => {
   }
 };
 
-// Initialization
 const initialCode =
   decodeURI(document.location.hash.substring(1)) || exemploInicialForkJoin;
 
