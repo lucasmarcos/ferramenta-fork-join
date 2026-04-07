@@ -1,16 +1,8 @@
+import type { ElementsDefinition } from "cytoscape";
 import type { StackNode } from "./stack.js";
 
-interface GraphElement {
-  data: {
-    id?: string;
-    label?: string;
-    source?: string;
-    target?: string;
-  };
-}
-
-export const interpret = (stack: StackNode): GraphElement[] => {
-  const elements: GraphElement[] = [];
+export const interpret = (stack: StackNode): ElementsDefinition => {
+  const elements: ElementsDefinition = { nodes: [], edges: [] };
 
   const process = (
     node: StackNode,
@@ -19,11 +11,11 @@ export const interpret = (stack: StackNode): GraphElement[] => {
     if (!node) return [];
 
     if (node.type === "call") {
-      elements.push({ data: { id: node.id, label: node.label } });
+      elements.nodes.push({ data: { id: node.id, label: node.label } });
 
       for (const source of dependsOn) {
         if (source.type === "call") {
-          elements.push({ data: { source: source.id, target: node.id } });
+          elements.edges.push({ data: { source: source.id, target: node.id } });
         }
       }
 

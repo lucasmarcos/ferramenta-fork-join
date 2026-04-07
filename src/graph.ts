@@ -1,3 +1,4 @@
+import type { ElementsDefinition } from "cytoscape";
 import cytoscape from "cytoscape";
 import dagre from "cytoscape-dagre";
 
@@ -14,7 +15,7 @@ export interface GraphElement {
 
 export const renderGraph = (
   container: HTMLElement,
-  elements: GraphElement[],
+  elements: ElementsDefinition,
 ) => {
   return cytoscape({
     container,

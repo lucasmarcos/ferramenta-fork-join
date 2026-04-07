@@ -10,13 +10,13 @@ import { Compartment, Prec } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import type { NodePropSource, Tree } from "@lezer/common";
 import { basicSetup } from "codemirror";
+import type { ElementsDefinition } from "cytoscape";
 import { exampleForkJoin } from "./forkjoin/example.js";
 import { forkJoinHighlight } from "./forkjoin/highlight.js";
 import { lintForkJoin } from "./forkjoin/lint.js";
 import { parser as forkJoinParser } from "./forkjoin/parser.js";
 import { resolve as resolveForkJoin } from "./forkjoin/resolve.js";
 import { treewalk as treewalkForkJoin } from "./forkjoin/treewalk.js";
-import type { GraphElement } from "./graph.js";
 import { renderGraph } from "./graph.js";
 import { exampleParbeginParend } from "./parbeginparend/example.js";
 import { parBeginParEndHighlight } from "./parbeginparend/highlight.js";
@@ -118,7 +118,7 @@ const go = () => {
   document.location.hash = `${encodeURIComponent(currentMode)}|${encodeURIComponent(code)}`;
   if (!code) return;
 
-  let elements: GraphElement[] = [];
+  let elements: ElementsDefinition = { nodes: [], edges: [] };
 
   if (currentMode === "fork-join") {
     const tree = forkJoinParser.parse(code);
@@ -133,7 +133,7 @@ const go = () => {
     elements = interpretParbeginParend(stack);
   }
 
-  if (elements.length > 0) {
+  if (elements.nodes.length > 0) {
     renderGraph(graphContainer, elements);
   }
 };

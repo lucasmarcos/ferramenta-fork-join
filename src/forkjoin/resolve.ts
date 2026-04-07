@@ -1,16 +1,10 @@
+import type { ElementsDefinition } from "cytoscape";
 import type { Command } from "./treewalk.js";
 
-interface GraphElement {
-  data: {
-    id?: string;
-    label?: string;
-    source?: string;
-    target?: string;
-  };
-}
-
-export const resolve = (threads: Map<string, Command[]>): GraphElement[] => {
-  const elements: GraphElement[] = [];
+export const resolve = (
+  threads: Map<string, Command[]>,
+): ElementsDefinition => {
+  const elements: ElementsDefinition = { nodes: [], edges: [] };
   let latest: string | undefined;
 
   threads.forEach((_k, v) => {
@@ -27,21 +21,25 @@ export const resolve = (threads: Map<string, Command[]>): GraphElement[] => {
           if (lead.joinOn) {
             const nextLead = threads.get(lead.joinOn)?.[0];
             if (latest && nextLead?.id) {
-              elements.push({ data: { source: latest, target: nextLead.id } });
+              elements.edges.push({
+                data: { source: latest, target: nextLead.id },
+              });
             }
           } else {
             if (latest && lead.id) {
-              elements.push({ data: { source: latest, target: lead.id } });
+              elements.edges.push({
+                data: { source: latest, target: lead.id },
+              });
             }
           }
         }
       } else if (command.joinOn) {
         const lead = threads.get(command.joinOn)?.[0];
         if (latest && lead?.id) {
-          elements.push({ data: { source: latest, target: lead.id } });
+          elements.edges.push({ data: { source: latest, target: lead.id } });
         }
       } else if (command.label) {
-        elements.push({
+        elements.nodes.push({
           data: {
             id: command.id,
             label: command.label,
@@ -49,7 +47,7 @@ export const resolve = (threads: Map<string, Command[]>): GraphElement[] => {
         });
 
         if (latest && command.id) {
-          elements.push({ data: { source: latest, target: command.id } });
+          elements.edges.push({ data: { source: latest, target: command.id } });
         }
 
         latest = command.id;
