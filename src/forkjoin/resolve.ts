@@ -4,7 +4,6 @@ interface GraphElement {
   data: {
     id?: string;
     label?: string;
-    shape?: string;
     source?: string;
     target?: string;
   };
@@ -46,7 +45,6 @@ export const resolve = (threads: Map<string, Command[]>): GraphElement[] => {
           data: {
             id: command.id,
             label: command.label,
-            shape: command.label.length <= 2 ? "ellipse" : "round-rectangle",
           },
         });
 

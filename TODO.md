@@ -1,3 +1,4 @@
 - nós com labels grandes não são mais ovais como deveriam ser
 - as sugestões de correções não estão mais funcionando
 - o realce de sintáxe também parou de funcionar
+- quando uma sugestão de correção adiciona uma definição de váriavel no arquivo ela deve ir depois dos comentários iniciais

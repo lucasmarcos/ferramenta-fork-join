@@ -9,7 +9,6 @@ export interface GraphElement {
     label?: string;
     source?: string;
     target?: string;
-    shape?: string;
   };
 }
 
@@ -26,8 +25,13 @@ export const renderGraph = (
         selector: "node",
         style: {
           label: "data(label)",
+          shape: "ellipse",
           "background-color": "white",
           "border-width": 1,
+          "text-halign": "center",
+          "text-valign": "center",
+          width: "label",
+          height: "label",
         },
       },
       {
@@ -38,13 +42,6 @@ export const renderGraph = (
           "target-arrow-color": "black",
           "line-color": "black",
           width: 1,
-        },
-      },
-      {
-        selector: "label",
-        style: {
-          "text-halign": "center",
-          "text-valign": "center",
         },
       },
     ],
