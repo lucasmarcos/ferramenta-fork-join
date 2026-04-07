@@ -206,7 +206,9 @@ const executeBlock = (ctx: Context, blockName: string, depth = 0): void => {
               (ctx.joinCounts.get(controlVar) ?? 0) + 1,
             );
             ctx.threads.get(ctx.currentThread)?.push({ joinOn: controlVar });
-            ctx.threads.set(controlVar, [{ join: targetLabel }]);
+            if (!ctx.threads.has(controlVar)) {
+              ctx.threads.set(controlVar, [{ join: targetLabel }]);
+            }
           }
         } else if (targetLabel) {
           ctx.errors.push({

@@ -6,7 +6,7 @@ import { treewalk } from "../out/forkjoin/treewalk.js";
 
 test("borked", () => {
   const code = `
-    VAR_H = 6;
+    VAR_H = 3;
     VAR_D = 3;
 
     FORK ROT_A;
@@ -57,8 +57,8 @@ test("borked", () => {
 
   const nodeE = elements.nodes.find((n) => n.data.label === "E");
   const nodeG = elements.nodes.find((n) => n.data.label === "G");
-  const nodeF = elements.nodes.find((n) => n.data.label === "G");
-  const nodeH = elements.nodes.find((n) => n.data.label === "G");
+  const nodeF = elements.nodes.find((n) => n.data.label === "F");
+  const nodeH = elements.nodes.find((n) => n.data.label === "H");
 
   const edgeDE = elements.edges.find(
     (e) => e.data.source === nodeD.data.id && e.data.target === nodeE.data.id,
@@ -73,7 +73,7 @@ test("borked", () => {
   );
 
   const edgeEH = elements.edges.find(
-    (e) => e.data.source === nodeF.data.id && e.data.target === nodeH.data.id,
+    (e) => e.data.source === nodeE.data.id && e.data.target === nodeH.data.id,
   );
 
   const edgeFH = elements.edges.find(
