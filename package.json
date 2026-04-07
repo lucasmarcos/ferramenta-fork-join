@@ -8,7 +8,7 @@
     "@tailwindcss/cli": "^4.2.2",
     "@types/cytoscape-dagre": "^2.3.4",
     "@types/node": "^25.5.2",
-    "@typescript/native-preview": "^7.0.0-dev.20260406.1",
+    "@typescript/native-preview": "^7.0.0-dev.20260407.1",
     "codemirror": "^6.0.2",
     "cytoscape": "^3.33.2",
     "cytoscape-dagre": "^2.5.0",
