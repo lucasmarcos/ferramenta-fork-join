@@ -2,8 +2,8 @@ import assert from "node:assert";
 import { test } from "node:test";
 import { parser } from "../out/forkJoinParser.js";
 import { lintForkJoin } from "../out/forkjoin/lint.js";
-import { treewalk } from "../out/forkjoin/treewalk.js";
 import { resolve } from "../out/forkjoin/resolve.js";
+import { treewalk } from "../out/forkjoin/treewalk.js";
 
 const complexCode = `
 VAR_A = 2;
@@ -88,13 +88,21 @@ test("stress: complex pipeline parses without syntax errors", () => {
     return false;
   };
 
-  assert.strictEqual(hasError(cursor), false, "Should parse without syntax errors");
+  assert.strictEqual(
+    hasError(cursor),
+    false,
+    "Should parse without syntax errors",
+  );
 });
 
 test("stress: complex pipeline has no lint errors", () => {
   const result = lintForkJoin(complexCode);
 
-  assert.strictEqual(result.diagnostics.length, 0, "Should have no lint errors");
+  assert.strictEqual(
+    result.diagnostics.length,
+    0,
+    "Should have no lint errors",
+  );
   assert.strictEqual(result.hasErrors, false);
 });
 
@@ -110,8 +118,8 @@ test("stress: complex pipeline generates correct graph size", () => {
   const walked = treewalk(complexCode, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter(e => e.data.label);
-  const edges = elements.filter(e => e.data.source);
+  const nodes = elements.filter((e) => e.data.label);
+  const edges = elements.filter((e) => e.data.source);
 
   assert.strictEqual(nodes.length, 19, "Should have 19 nodes");
   assert.strictEqual(edges.length, 25, "Should have 25 edges");
@@ -123,15 +131,29 @@ test("stress: complex pipeline has all expected nodes", () => {
   const elements = resolve(walked.threads);
 
   const nodeLabels = elements
-    .filter(e => e.data.label)
-    .map(e => e.data.label);
+    .filter((e) => e.data.label)
+    .map((e) => e.data.label);
 
   const expectedNodes = [
-    "START", "LOAD_DATA", "PROCESS_MAIN", "PROCESS_A1",
-    "COMBINE_A", "PROCESS_B_MAIN", "TASK_B1_1", "TASK_B1_2", "TASK_B2_1",
-    "AGGREGATE_B", "DIRECT_PATH", "NESTED_1", "NESTED_2",
-    "DEEP_TASK_1", "DEEP_TASK_2", "DEEP_TASK_3", "NESTED_DONE",
-    "FINALIZE", "SAVE_RESULTS"
+    "START",
+    "LOAD_DATA",
+    "PROCESS_MAIN",
+    "PROCESS_A1",
+    "COMBINE_A",
+    "PROCESS_B_MAIN",
+    "TASK_B1_1",
+    "TASK_B1_2",
+    "TASK_B2_1",
+    "AGGREGATE_B",
+    "DIRECT_PATH",
+    "NESTED_1",
+    "NESTED_2",
+    "DEEP_TASK_1",
+    "DEEP_TASK_2",
+    "DEEP_TASK_3",
+    "NESTED_DONE",
+    "FINALIZE",
+    "SAVE_RESULTS",
   ];
 
   for (const expected of expectedNodes) {
@@ -142,5 +164,9 @@ test("stress: complex pipeline has all expected nodes", () => {
 test("stress: complex pipeline synchronization variables are valid", () => {
   const tree = parser.parse(complexCode);
   const walked = treewalk(complexCode, tree);
-  assert.strictEqual(walked.errors.length, 0, "Should have no validation errors");
+  assert.strictEqual(
+    walked.errors.length,
+    0,
+    "Should have no validation errors",
+  );
 });
