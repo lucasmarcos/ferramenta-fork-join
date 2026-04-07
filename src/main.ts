@@ -22,6 +22,7 @@ import { exampleParbeginParend } from "./parbeginparend/example.js";
 import { parBeginParEndHighlight } from "./parbeginparend/highlight.js";
 import { interpret as interpretParbeginParend } from "./parbeginparend/interpret.js";
 import { parse as parseParbeginParend } from "./parbeginparend/ir.js";
+import { lintParBeginParEnd } from "./parbeginparend/lint.js";
 import { parser as parbeginParendParser } from "./parbeginparend/parser.js";
 import { stackify as stackifyParbeginParend } from "./parbeginparend/stack.js";
 
@@ -107,8 +108,9 @@ const lint = linter(
       return result.diagnostics;
     }
 
-    lastLintHadErrors = false;
-    return [];
+    const result = lintParBeginParEnd(code);
+    lastLintHadErrors = result.hasErrors;
+    return result.diagnostics;
   },
   { autoPanel: true },
 );
@@ -128,9 +130,11 @@ const go = () => {
     }
   } else {
     const tree = parbeginParendParser.parse(code);
-    const ir = parseParbeginParend(code, tree);
-    const stack = stackifyParbeginParend(ir);
-    elements = interpretParbeginParend(stack);
+    if (errorFree(tree)) {
+      const ir = parseParbeginParend(code, tree);
+      const stack = stackifyParbeginParend(ir);
+      elements = interpretParbeginParend(stack);
+    }
   }
 
   if (elements.nodes.length > 0) {

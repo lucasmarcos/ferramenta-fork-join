@@ -11,7 +11,7 @@ BEGIN
       D;
       E;
     END
-  PAREND;
+  PAREND
   F;
 END
 `;
