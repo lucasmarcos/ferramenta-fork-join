@@ -42,5 +42,13 @@ export const stackify = (ir: string[]): StackNode => {
     }
   }
 
-  return current[0];
+  if (current.length === 0) {
+    return { type: "seq", child: [] };
+  }
+
+  if (current.length === 1) {
+    return current[0];
+  }
+
+  return { type: "seq", child: current };
 };
