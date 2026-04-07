@@ -44,50 +44,72 @@ test("borked", () => {
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
+  const countByLabel = (label) =>
+    elements.nodes.filter((n) => n.data.label === label).length;
+  const hasEdge = (sourceLabel, targetLabel) => {
+    const source = elements.nodes.find((n) => n.data.label === sourceLabel);
+    const target = elements.nodes.find((n) => n.data.label === targetLabel);
+
+    return elements.edges.some(
+      (e) =>
+        e.data.source === source?.data.id && e.data.target === target?.data.id,
+    );
+  };
+  const countIncoming = (targetLabel) => {
+    const target = elements.nodes.find((n) => n.data.label === targetLabel);
+    return elements.edges.filter((e) => e.data.target === target?.data.id)
+      .length;
+  };
+  const countOutgoing = (sourceLabel) => {
+    const source = elements.nodes.find((n) => n.data.label === sourceLabel);
+    return elements.edges.filter((e) => e.data.source === source?.data.id)
+      .length;
+  };
 
   const nodeD = elements.nodes.find((n) => n.data.label === "D");
 
+  assert.strictEqual(
+    walked.errors.length,
+    0,
+    "Should have no validation errors",
+  );
   assert.ok(nodeD, "D exists");
+  for (const label of ["A", "B", "C", "D", "E", "F", "G", "H"]) {
+    assert.strictEqual(
+      countByLabel(label),
+      1,
+      `Should have exactly one ${label}`,
+    );
+  }
 
-  const nodesE = elements.nodes.filter((n) => n.data.label === "E");
-  const nodesG = elements.nodes.filter((n) => n.data.label === "G");
+  assert.strictEqual(elements.nodes.length, 8, "Should have 8 nodes");
+  assert.strictEqual(elements.edges.length, 10, "Should have 10 edges");
 
-  assert.strictEqual(nodesE.length, 1, "Just one E");
-  assert.strictEqual(nodesG.length, 1, "Just one G");
-
-  const nodeE = elements.nodes.find((n) => n.data.label === "E");
-  const nodeG = elements.nodes.find((n) => n.data.label === "G");
-  const nodeF = elements.nodes.find((n) => n.data.label === "F");
-  const nodeH = elements.nodes.find((n) => n.data.label === "H");
-
-  const edgeDE = elements.edges.find(
-    (e) => e.data.source === nodeD.data.id && e.data.target === nodeE.data.id,
+  assert.ok(hasEdge("A", "C"), "Should have edge A -> C");
+  assert.ok(hasEdge("A", "D"), "Should have edge A -> D");
+  assert.ok(hasEdge("B", "D"), "Should have edge B -> D");
+  assert.ok(hasEdge("C", "D"), "Should have edge C -> D");
+  assert.strictEqual(
+    countIncoming("D"),
+    3,
+    "D should have exactly 3 incoming edges",
   );
 
-  const edgeDG = elements.edges.find(
-    (e) => e.data.source === nodeD.data.id && e.data.target === nodeG.data.id,
+  assert.ok(hasEdge("D", "E"), "Should have edge D -> E");
+  assert.ok(hasEdge("D", "G"), "Should have edge D -> G");
+  assert.ok(hasEdge("D", "F"), "Should have edge D -> F");
+  assert.strictEqual(
+    countOutgoing("D"),
+    3,
+    "D should have exactly 3 outgoing edges",
   );
 
-  const edgeDF = elements.edges.find(
-    (e) => e.data.source === nodeD.data.id && e.data.target === nodeF.data.id,
+  assert.ok(hasEdge("E", "H"), "Should have edge E -> H");
+  assert.ok(hasEdge("F", "H"), "Should have edge F -> H");
+  assert.ok(hasEdge("G", "H"), "Should have edge G -> H");
+  assert.strictEqual(
+    countIncoming("H"),
+    3,
+    "H should have exactly 3 incoming edges",
   );
-
-  const edgeEH = elements.edges.find(
-    (e) => e.data.source === nodeE.data.id && e.data.target === nodeH.data.id,
-  );
-
-  const edgeFH = elements.edges.find(
-    (e) => e.data.source === nodeF.data.id && e.data.target === nodeH.data.id,
-  );
-
-  const edgeGH = elements.edges.find(
-    (e) => e.data.source === nodeG.data.id && e.data.target === nodeH.data.id,
-  );
-
-  assert.ok(edgeDE, "should have edge d -> e");
-  assert.ok(edgeDG, "should have edge d -> g");
-  assert.ok(edgeDF, "should have edge d -> f");
-  assert.ok(edgeEH, "should have edge e -> h");
-  assert.ok(edgeFH, "should have edge f -> h");
-  assert.ok(edgeGH, "should have edge g -> h");
 });
