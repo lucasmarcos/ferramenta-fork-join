@@ -5,7 +5,7 @@ import {
   LanguageSupport,
   LRLanguage,
 } from "@codemirror/language";
-import { type Diagnostic, linter, lintGutter } from "@codemirror/lint";
+import { linter, lintGutter } from "@codemirror/lint";
 import { Compartment } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import type { NodePropSource, Tree } from "@lezer/common";
@@ -13,10 +13,9 @@ import { basicSetup } from "codemirror";
 import { parser as forkJoinParser } from "./forkJoinParser.js";
 import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
 import { forkJoinHighlight } from "./forkjoin/highlight.js";
+import { lintForkJoin } from "./forkjoin/lint.js";
 import { resolve as resolveForkJoin } from "./forkjoin/resolve.js";
-import { checkSyntax as checkSyntaxForkJoin } from "./forkjoin/syntax.js";
 import { treewalk as treewalkForkJoin } from "./forkjoin/treewalk.js";
-import { getActionsForError } from "./forkjoin/actions.js";
 import type { GraphElement } from "./graph.js";
 import { renderGraph } from "./graph.js";
 import { parser as parbeginParendParser } from "./parBeginParEndParser.js";
@@ -36,7 +35,7 @@ const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
 let editor: EditorView;
 const languageConf = new Compartment();
 
-let hasIntErrors = false;
+let lastLintHadErrors = false;
 
 const getModeData = (mode: Mode) => {
   if (mode === "fork-join") {
@@ -99,48 +98,23 @@ const errorFree = (tree: Tree) => {
     }
     return true;
   };
-  return process() && !hasIntErrors;
+  return process() && !lastLintHadErrors;
 };
 
 const lint = linter(
   (view) => {
     const code = view.state.doc.toString();
-    const diagnostics: Diagnostic[] = [];
-    hasIntErrors = false;
 
     if (currentMode === "fork-join") {
-      const tree = forkJoinParser.parse(code);
-      const syntaxErrors = checkSyntaxForkJoin(tree);
-
-      if (syntaxErrors.length > 0) {
-        for (const err of syntaxErrors) {
-          diagnostics.push({
-            message: err.message,
-            severity: "error",
-            from: err.start || 0,
-            to: err.end || 0,
-          });
-        }
-      } else {
-        const walked = treewalkForkJoin(code, tree);
-        hasIntErrors = walked.errors.length > 0;
-        for (const err of walked.errors) {
-          diagnostics.push({
-            message: err.message,
-            severity: (err.severity as "error" | "warning" | "info") || "error",
-            from: err.start || 0,
-            to: err.end || 0,
-            actions: getActionsForError(err),
-          });
-        }
-      }
+      const result = lintForkJoin(code);
+      lastLintHadErrors = result.hasErrors;
+      return result.diagnostics;
     }
 
-    return diagnostics;
+    lastLintHadErrors = false;
+    return [];
   },
-  {
-    autoPanel: true,
-  },
+  { autoPanel: true },
 );
 
 const go = () => {
