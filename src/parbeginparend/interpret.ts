@@ -44,7 +44,7 @@ export const interpret = (stack: StackNode): ElementsDefinition => {
         }
       }
 
-      return allOutputs;
+      return allOutputs.length > 0 ? allOutputs : dependsOn;
     }
 
     return dependsOn;
