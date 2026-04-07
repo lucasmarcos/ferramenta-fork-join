@@ -1,7 +1,9 @@
-import { indentWithTab } from "@codemirror/commands";
+import { indentWithTab, insertNewlineKeepIndent } from "@codemirror/commands";
 import {
   foldGutter,
   foldNodeProp,
+  indentNodeProp,
+  indentOnInput,
   LanguageSupport,
   LRLanguage,
 } from "@codemirror/language";
@@ -72,6 +74,13 @@ const getLanguageSupport = (mode: Mode) => {
     foldNodeProp.add({
       Def: (tree, _state) => ({ from: tree.from, to: tree.to }),
       Begin: (tree, _state) => ({ from: tree.from, to: tree.to }),
+    }),
+    indentNodeProp.add({
+      Program: (context) => {
+        const prevLine = context.lineAt(context.pos, -1);
+        const match = prevLine.text.match(/^(\s*)/);
+        return match ? match[1].length : 0;
+      },
     }),
   ].filter((p): p is NodePropSource => p !== null);
 
@@ -148,7 +157,11 @@ const initialCode =
 editor = new EditorView({
   extensions: [
     basicSetup,
-    keymap.of([indentWithTab]),
+    keymap.of([
+      indentWithTab,
+      { key: "Enter", run: insertNewlineKeepIndent },
+    ]),
+    indentOnInput(),
     languageConf.of(getLanguageSupport(currentMode)),
     lint,
     lintGutter(),
