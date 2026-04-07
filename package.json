@@ -21,7 +21,7 @@
     "watch:js": "tsgo --watch",
     "watch": "esbuild --watch --bundle out/main.js --outfile=web/main.js",
     "bundle": "esbuild --bundle --minify out/main.js --outfile=web/main.js",
-    "lint": "biome check --write src biome.json package-lock.json package.json tsconfig.json",
+    "lint": "biome check --write --unsafe biome.json package-lock.json package.json tsconfig.json src test",
     "test": "node --test"
   }
 }

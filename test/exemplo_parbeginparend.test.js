@@ -11,30 +11,12 @@ test("exemplo.ts: exampleParbeginParend parses successfully", () => {
 });
 
 test("exemplo.ts: exampleParbeginParend contains expected commands", () => {
-  assert.ok(
-    exampleParbeginParend.includes("A"),
-    "Should contain command A",
-  );
-  assert.ok(
-    exampleParbeginParend.includes("B"),
-    "Should contain command B",
-  );
-  assert.ok(
-    exampleParbeginParend.includes("C"),
-    "Should contain command C",
-  );
-  assert.ok(
-    exampleParbeginParend.includes("D"),
-    "Should contain command D",
-  );
-  assert.ok(
-    exampleParbeginParend.includes("E"),
-    "Should contain command E",
-  );
-  assert.ok(
-    exampleParbeginParend.includes("F"),
-    "Should contain command F",
-  );
+  assert.ok(exampleParbeginParend.includes("A"), "Should contain command A");
+  assert.ok(exampleParbeginParend.includes("B"), "Should contain command B");
+  assert.ok(exampleParbeginParend.includes("C"), "Should contain command C");
+  assert.ok(exampleParbeginParend.includes("D"), "Should contain command D");
+  assert.ok(exampleParbeginParend.includes("E"), "Should contain command E");
+  assert.ok(exampleParbeginParend.includes("F"), "Should contain command F");
 });
 
 test("exemplo.ts: exampleParbeginParend uses PARBEGIN/PAREND", () => {
@@ -50,10 +32,7 @@ test("exemplo.ts: exampleParbeginParend uses PARBEGIN/PAREND", () => {
     exampleParbeginParend.includes("BEGIN"),
     "Should use BEGIN keyword",
   );
-  assert.ok(
-    exampleParbeginParend.includes("END"),
-    "Should use END keyword",
-  );
+  assert.ok(exampleParbeginParend.includes("END"), "Should use END keyword");
 });
 
 test("exemplo.ts: exampleParbeginParend demonstrates educational content", () => {

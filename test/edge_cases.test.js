@@ -86,7 +86,7 @@ test("JOIN without corresponding label", () => {
 
 test("very long label name", () => {
   const longLabel = "A".repeat(100);
-  
+
   const code = `
     START;
     FORK ${longLabel};
