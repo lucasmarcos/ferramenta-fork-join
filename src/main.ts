@@ -1,7 +1,7 @@
 import { indentWithTab } from "@codemirror/commands";
 import {
   foldGutter,
-  foldNodeProp,
+  foldService,
   indentOnInput,
   LanguageSupport,
   LRLanguage,
@@ -70,10 +70,6 @@ const getLanguageSupport = (mode: Mode) => {
 
   const props = [
     mode === "fork-join" ? forkJoinHighlight : parBeginParEndHighlight,
-    foldNodeProp.add({
-      Def: (tree, _state) => ({ from: tree.from, to: tree.to }),
-      Begin: (tree, _state) => ({ from: tree.from, to: tree.to }),
-    }),
   ].filter((p): p is NodePropSource => p !== null);
 
   const lezerParser = data.parser.configure({ props });
@@ -162,6 +158,31 @@ const parseHash = (): { mode: Mode; code: string } => {
   return { mode, code };
 };
 
+const foldBlocks = foldService.of((state, from, _to) => {
+  const line = state.doc.lineAt(from);
+  const text = line.text.trim();
+
+  if (!text.endsWith(":")) return null;
+
+  const startLine = line.number;
+  const endLineNum = state.doc.lines;
+
+  let foldEnd = line.to;
+  for (let i = startLine + 1; i <= endLineNum; i++) {
+    const nextLine = state.doc.line(i);
+    const nextText = nextLine.text.trim();
+    if (nextText.endsWith(":") && !nextText.startsWith("//")) {
+      foldEnd = state.doc.line(i - 1).to;
+      break;
+    }
+    foldEnd = nextLine.to;
+  }
+
+  if (foldEnd <= line.to) return null;
+
+  return { from: line.to, to: foldEnd - 1 };
+});
+
 const initial = parseHash();
 currentMode = initial.mode;
 modeSelect.value = currentMode;
@@ -194,6 +215,7 @@ editor = new EditorView({
     lint,
     lintGutter(),
     foldGutter(),
+    foldBlocks,
     EditorView.updateListener.of((update) => {
       if (update.docChanged) go();
     }),

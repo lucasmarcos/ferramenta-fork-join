@@ -111,7 +111,7 @@ const executeBlock = (ctx: Context, blockName: string, depth = 0): void => {
   let quit = false;
 
   for (const cmd of commands) {
-    if (quit && cmd.name !== "Join") {
+    if (quit && cmd.name !== "Join" && cmd.name !== "LineComment") {
       ctx.errors.push({
         type: "code-after-quit",
         message: "Chamada de função após o QUIT",
