@@ -128,7 +128,7 @@ const lint = linter(
 
 const go = () => {
   const code = editor.state.doc.toString();
-  document.location.hash = encodeURIComponent(currentMode) + "|" + encodeURIComponent(code);
+  document.location.hash = `${encodeURIComponent(currentMode)}|${encodeURIComponent(code)}`;
   if (!code) return;
 
   let elements: GraphElement[] = [];
@@ -177,10 +177,7 @@ modeSelect.value = currentMode;
 editor = new EditorView({
   extensions: [
     basicSetup,
-    keymap.of([
-      indentWithTab,
-      { key: "Enter", run: insertNewlineKeepIndent },
-    ]),
+    keymap.of([indentWithTab, { key: "Enter", run: insertNewlineKeepIndent }]),
     indentOnInput(),
     languageConf.of(getLanguageSupport(currentMode)),
     lint,
