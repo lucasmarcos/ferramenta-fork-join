@@ -32,6 +32,25 @@ export const getActionsForError = (
       });
       break;
     }
+
+    case "missing-end":
+    case "missing-parend": {
+      if (err.insertText) {
+        actions.push({
+          name: "Inserir",
+          apply(view) {
+            view.dispatch({
+              changes: {
+                from: view.state.doc.length,
+                to: view.state.doc.length,
+                insert: err.insertText,
+              },
+            });
+          },
+        });
+      }
+      break;
+    }
   }
 
   return actions;

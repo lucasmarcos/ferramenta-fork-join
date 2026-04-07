@@ -1,11 +1,16 @@
 import type { Tree } from "@lezer/common";
 
 export interface ValidationIssue {
-  type: "empty-sequential-block" | "empty-parallel-block";
+  type:
+    | "empty-sequential-block"
+    | "empty-parallel-block"
+    | "missing-end"
+    | "missing-parend";
   message: string;
   start: number;
   end: number;
   severity: "warning";
+  insertText?: string;
 }
 
 interface BlockState {
@@ -73,6 +78,23 @@ export const validateStructure = (tree: Tree): ValidationIssue[] => {
       }
     }
   } while (cursor.next());
+
+  while (stack.length > 0) {
+    const last = stack.pop();
+    if (!last) break;
+
+    issues.push({
+      type: last.type === "begin" ? "missing-end" : "missing-parend",
+      message:
+        last.type === "begin"
+          ? "Bloco BEGIN sem END"
+          : "Bloco PARBEGIN sem PAREND",
+      start: last.start,
+      end: last.start,
+      severity: "warning",
+      insertText: last.type === "begin" ? "\nEND" : "\nPAREND",
+    });
+  }
 
   return issues;
 };
