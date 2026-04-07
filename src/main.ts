@@ -5,12 +5,7 @@ import {
   LanguageSupport,
   LRLanguage,
 } from "@codemirror/language";
-import {
-  type Action,
-  type Diagnostic,
-  linter,
-  lintGutter,
-} from "@codemirror/lint";
+import { type Diagnostic, linter, lintGutter } from "@codemirror/lint";
 import { Compartment } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import type { NodePropSource, Tree } from "@lezer/common";
@@ -20,10 +15,8 @@ import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
 import { forkJoinHighlight } from "./forkjoin/highlight.js";
 import { resolve as resolveForkJoin } from "./forkjoin/resolve.js";
 import { checkSyntax as checkSyntaxForkJoin } from "./forkjoin/syntax.js";
-import {
-  type TreewalkError,
-  treewalk as treewalkForkJoin,
-} from "./forkjoin/treewalk.js";
+import { treewalk as treewalkForkJoin } from "./forkjoin/treewalk.js";
+import { getActionsForError } from "./forkjoin/actions.js";
 import type { GraphElement } from "./graph.js";
 import { renderGraph } from "./graph.js";
 import { parser as parbeginParendParser } from "./parBeginParEndParser.js";
@@ -43,7 +36,7 @@ const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
 let editor: EditorView;
 const languageConf = new Compartment();
 
-let intErrors: TreewalkError[] = [];
+let hasIntErrors = false;
 
 const getModeData = (mode: Mode) => {
   if (mode === "fork-join") {
@@ -94,93 +87,6 @@ const getLanguageSupport = (mode: Mode) => {
   return new LanguageSupport(lang);
 };
 
-const getActionsForError = (err: TreewalkError): Action[] => {
-  const actions: Action[] = [];
-
-  switch (err.type) {
-    case "fork-missing-label":
-    case "join-missing-label": {
-      const label = err.label;
-      if (label) {
-        actions.push({
-          name: "Criar",
-          apply(view, _from, _to) {
-            view.dispatch({
-              changes: {
-                from: view.state.doc.length,
-                to: view.state.doc.length,
-                insert: `\n${label}:\n  QUIT;\n`,
-              },
-            });
-          },
-        });
-      }
-      break;
-    }
-
-    case "join-missing-variable": {
-      const label = err.label;
-      if (label) {
-        actions.push({
-          name: "Criar",
-          apply(view, _from, _to) {
-            view.dispatch({
-              changes: { from: 0, to: 0, insert: `${label} = 1;\n` },
-            });
-          },
-        });
-      }
-      break;
-    }
-
-    case "join-missing-quit": {
-      actions.push({
-        name: "Trocar",
-        apply(view, from, to) {
-          view.dispatch({ changes: { from, to, insert: "QUIT" } });
-        },
-      });
-      break;
-    }
-
-    case "code-after-quit":
-    case "unused-variable": {
-      actions.push({
-        name: "Remover",
-        apply(view, from, to) {
-          view.dispatch({
-            changes: {
-              from,
-              to: Math.min(to + 1, view.state.doc.length),
-            },
-          });
-        },
-      });
-      break;
-    }
-
-    case "variable-mismatch": {
-      if ("variable" in err && "expected" in err) {
-        actions.push({
-          name: "Corrigir",
-          apply(view, _from, _to) {
-            view.dispatch({
-              changes: {
-                from: err.start,
-                to: err.end,
-                insert: `${err.variable} = ${err.expected};`,
-              },
-            });
-          },
-        });
-      }
-      break;
-    }
-  }
-
-  return actions;
-};
-
 const errorFree = (tree: Tree) => {
   const cursor = tree.cursor();
   const process = (): boolean => {
@@ -193,14 +99,14 @@ const errorFree = (tree: Tree) => {
     }
     return true;
   };
-  return process() && intErrors.length === 0;
+  return process() && !hasIntErrors;
 };
 
 const lint = linter(
   (view) => {
     const code = view.state.doc.toString();
     const diagnostics: Diagnostic[] = [];
-    intErrors = [];
+    hasIntErrors = false;
 
     if (currentMode === "fork-join") {
       const tree = forkJoinParser.parse(code);
@@ -217,7 +123,7 @@ const lint = linter(
         }
       } else {
         const walked = treewalkForkJoin(code, tree);
-        intErrors = walked.errors;
+        hasIntErrors = walked.errors.length > 0;
         for (const err of walked.errors) {
           diagnostics.push({
             message: err.message,
