@@ -18,6 +18,7 @@ import {
   type IError,
   treewalk as treewalkForkJoin,
 } from "./forkjoin/treewalk.js";
+import type { GraphElement } from "./graph.js";
 import { renderGraph } from "./graph.js";
 import { forkJoinHighlight, parBeginParEndHighlight } from "./highlight.js";
 import { parser as parbeginParendParser } from "./parBeginParEndParser.js";
@@ -145,16 +146,6 @@ const go = () => {
   const code = editor.state.doc.toString();
   document.location.hash = encodeURI(code);
   if (!code) return;
-
-  interface GraphElement {
-    data: {
-      id?: string;
-      label?: string;
-      source?: string;
-      target?: string;
-      shape?: string;
-    };
-  }
 
   let elements: GraphElement[] = [];
 

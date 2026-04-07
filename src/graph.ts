@@ -3,7 +3,7 @@ import dagre from "cytoscape-dagre";
 
 cytoscape.use(dagre);
 
-interface GraphElement {
+export interface GraphElement {
   data: {
     id?: string;
     label?: string;
