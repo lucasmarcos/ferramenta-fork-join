@@ -1,6 +1,7 @@
 import type { Tree } from "@lezer/common";
 
-interface SyntaxError {
+export interface SyntaxError {
+  type: "syntax-error" | "missing-semicolon";
   message: string;
   start: number;
   end: number;
@@ -11,18 +12,40 @@ export const checkSyntax = (tree: Tree): SyntaxError[] => {
 
   const cursor = tree.cursor();
 
-  const process = () => {
+  const process = (parentName?: string, lastLabelEnd?: number) => {
     if (cursor.type.isError) {
-      errors.push({
-        message: "Erro de sintaxe",
-        start: cursor.from,
-        end: cursor.to,
-      });
+      const isMissingSemicolon =
+        parentName === "Call" ||
+        parentName === "Fork" ||
+        parentName === "Join" ||
+        parentName === "Assign";
+
+      if (isMissingSemicolon && lastLabelEnd !== undefined) {
+        errors.push({
+          type: "missing-semicolon",
+          message: "Falta ponto e vírgula",
+          start: lastLabelEnd,
+          end: lastLabelEnd,
+        });
+      } else {
+        errors.push({
+          type: "syntax-error",
+          message: "Erro de sintaxe",
+          start: cursor.from,
+          end: cursor.to,
+        });
+      }
     }
 
+    const nodeName = cursor.name;
+
     if (cursor.firstChild()) {
+      let labelEnd: number | undefined;
       do {
-        process();
+        if (cursor.name === "Label" || cursor.name === "Number") {
+          labelEnd = cursor.to;
+        }
+        process(nodeName, labelEnd);
       } while (cursor.nextSibling());
       cursor.parent();
     }
