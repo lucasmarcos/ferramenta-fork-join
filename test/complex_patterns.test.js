@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/forkJoinParser.js";
+import { parser } from "../out/forkjoin/parser.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { treewalk } from "../out/forkjoin/treewalk.js";
 
@@ -24,8 +24,7 @@ D_LABEL:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => !e.data.source);
-  const nodeLabels = nodes.map((n) => n.data.label);
+  const nodeLabels = elements.nodes.map((n) => n.data.label);
 
   assert.ok(nodeLabels.includes("A"), "Should have node A");
   assert.ok(nodeLabels.includes("B"), "Should have node B");
@@ -53,17 +52,16 @@ C_LABEL:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => !e.data.source);
   assert.ok(
-    nodes.some((n) => n.data.label === "B"),
+    elements.nodes.some((n) => n.data.label === "B"),
     "Should have forked to B",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "C"),
+    elements.nodes.some((n) => n.data.label === "C"),
     "Should have forked to C",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "D"),
+    elements.nodes.some((n) => n.data.label === "D"),
     "Should have D in main thread",
   );
 });
@@ -71,7 +69,7 @@ C_LABEL:
 test("join basic case", () => {
   const code = `
     VAR_C = 2;
-    
+
     A;
     FORK ROT_B;
     JOIN VAR_C, ROT_C, QUIT;
@@ -88,8 +86,7 @@ test("join basic case", () => {
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => !e.data.source);
-  assert.ok(nodes.length > 0, "Should have some nodes");
+  assert.ok(elements.nodes.length > 0, "Should have some nodes");
 });
 
 test("complex pattern with multiple forks and joins", () => {
@@ -118,22 +115,21 @@ BARRIER:
   const walked = treewalk(code, tree);
 
   const elements = resolve(walked.threads);
-  const nodes = elements.filter((e) => !e.data.source);
 
   assert.ok(
-    nodes.some((n) => n.data.label === "START"),
+    elements.nodes.some((n) => n.data.label === "START"),
     "Should have START",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "T1_WORK"),
+    elements.nodes.some((n) => n.data.label === "T1_WORK"),
     "Should have T1_WORK",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "T2_WORK"),
+    elements.nodes.some((n) => n.data.label === "T2_WORK"),
     "Should have T2_WORK",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "FINAL"),
+    elements.nodes.some((n) => n.data.label === "FINAL"),
     "Should have FINAL",
   );
 });
@@ -150,11 +146,8 @@ QUIT;
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => !e.data.source);
-  const edges = elements.filter((e) => e.data.source);
-
-  assert.strictEqual(nodes.length, 4, "Should have 4 nodes");
-  assert.ok(edges.length >= 3, "Should have edges connecting sequential nodes");
+  assert.strictEqual(elements.nodes.length, 4, "Should have 4 nodes");
+  assert.strictEqual(elements.edges.length, 3, "Should have 3 edges");
 });
 
 test("QUIT terminates thread", () => {
@@ -172,8 +165,8 @@ B_LABEL:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  assert.ok(Array.isArray(elements), "Should resolve to elements array");
-  assert.ok(elements.length > 0, "Should have at least some elements");
+  assert.ok(Array.isArray(elements.nodes), "Should resolve to elements array");
+  assert.ok(elements.nodes.length > 0, "Should have at least some elements");
 });
 
 test("empty label block", () => {
@@ -204,7 +197,6 @@ QUIT;
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => !e.data.source);
-  assert.strictEqual(nodes.length, 1, "Should have exactly one node");
-  assert.strictEqual(nodes[0].data.label, "ONLY_ONE");
+  assert.strictEqual(elements.nodes.length, 1, "Should have exactly one node");
+  assert.strictEqual(elements.nodes[0].data.label, "ONLY_ONE");
 });

@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/forkJoinParser.js";
+import { parser } from "../out/forkjoin/parser.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { treewalk } from "../out/forkjoin/treewalk.js";
 
@@ -25,11 +25,13 @@ QUIT;
   );
 
   const elements = resolve(walked.threads);
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const edges = elements.filter((e) => e.data.source && e.data.target);
 
-  assert.strictEqual(nodes.length, 3, "Should resolve to 3 nodes");
-  assert.strictEqual(edges.length, 2, "Should have 2 edges (A->B, B->C)");
+  assert.strictEqual(elements.nodes.length, 3, "Should resolve to 3 nodes");
+  assert.strictEqual(
+    elements.edges.length,
+    2,
+    "Should have 2 edges (A->B, B->C)",
+  );
 });
 
 test("INTEGRATION: FORK creates parallel execution", () => {
@@ -54,24 +56,24 @@ BRANCH:
   assert.ok(hasFork, "Main thread should have fork");
 
   const elements = resolve(walked.threads);
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
 
   assert.ok(
-    nodes.some((n) => n.data.label === "MAIN1"),
+    elements.nodes.some((n) => n.data.label === "MAIN1"),
     "Should have MAIN1",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "MAIN2"),
+    elements.nodes.some((n) => n.data.label === "MAIN2"),
     "Should have MAIN2",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "WORK"),
+    elements.nodes.some((n) => n.data.label === "WORK"),
     "Should have WORK",
   );
 
-  const edges = elements.filter((e) => e.data.source && e.data.target);
-  const main1Node = nodes.find((n) => n.data.label === "MAIN1");
-  const main1Edges = edges.filter((e) => e.data.source === main1Node.data.id);
+  const main1Node = elements.nodes.find((n) => n.data.label === "MAIN1");
+  const main1Edges = elements.edges.filter(
+    (e) => e.data.source === main1Node.data.id,
+  );
 
   assert.strictEqual(main1Edges.length, 2, "MAIN1 should fork to 2 nodes");
 });
@@ -99,17 +101,17 @@ SYNC:
   assert.ok(walked.threads.has("VAR_J"), "Should have sync thread");
 
   const elements = resolve(walked.threads);
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const labels = nodes.map((n) => n.data.label);
+  const labels = elements.nodes.map((n) => n.data.label);
 
   assert.ok(labels.includes("START"), "Should have START");
   assert.ok(labels.includes("MAIN_WORK"), "Should have MAIN_WORK");
   assert.ok(labels.includes("BRANCH_WORK"), "Should have BRANCH_WORK");
   assert.ok(labels.includes("AFTER_SYNC"), "Should have AFTER_SYNC");
 
-  const syncNode = nodes.find((n) => n.data.label === "AFTER_SYNC");
-  const edges = elements.filter((e) => e.data.source && e.data.target);
-  const syncEdges = edges.filter((e) => e.data.target === syncNode?.data.id);
+  const syncNode = elements.nodes.find((n) => n.data.label === "AFTER_SYNC");
+  const syncEdges = elements.edges.filter(
+    (e) => e.data.target === syncNode?.data.id,
+  );
 
   assert.strictEqual(
     syncEdges.length,
@@ -154,8 +156,7 @@ SYNC_B:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const labels = nodes.map((n) => n.data.label);
+  const labels = elements.nodes.map((n) => n.data.label);
 
   const expectedNodes = [
     "INIT",
@@ -235,8 +236,7 @@ ROT_C4:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const labels = nodes.map((n) => n.data.label);
+  const labels = elements.nodes.map((n) => n.data.label);
 
   assert.strictEqual(labels.length, 4, "Should have exactly 4 nodes");
   assert.ok(labels.includes("C1"), "Should have C1");
@@ -244,6 +244,5 @@ ROT_C4:
   assert.ok(labels.includes("C3"), "Should have C3");
   assert.ok(labels.includes("C4"), "Should have C4");
 
-  const edges = elements.filter((e) => e.data.source && e.data.target);
-  assert.ok(edges.length > 0, "Should have edges connecting nodes");
+  assert.ok(elements.edges.length > 0, "Should have edges connecting nodes");
 });

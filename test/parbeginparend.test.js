@@ -47,14 +47,13 @@ test("interpret generates nodes for simple sequence", () => {
   const stack = stackify(ir);
   const elements = interpret(stack);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  assert.strictEqual(nodes.length, 2, "Should generate 2 nodes");
+  assert.strictEqual(elements.nodes.length, 2, "Should generate 2 nodes");
   assert.ok(
-    nodes.some((n) => n.data.label === "A"),
+    elements.nodes.some((n) => n.data.label === "A"),
     "Should have node A",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "B"),
+    elements.nodes.some((n) => n.data.label === "B"),
     "Should have node B",
   );
 });
@@ -64,8 +63,7 @@ test("interpret generates edges for sequence", () => {
   const stack = stackify(ir);
   const elements = interpret(stack);
 
-  const edges = elements.filter((e) => e.data.source && e.data.target);
-  assert.strictEqual(edges.length, 1, "Should have 1 edge A->B");
+  assert.strictEqual(elements.edges.length, 1, "Should have 1 edge A->B");
 });
 
 test("interpret handles parallel branches", () => {
@@ -73,11 +71,10 @@ test("interpret handles parallel branches", () => {
   const stack = stackify(ir);
   const elements = interpret(stack);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  assert.strictEqual(nodes.length, 3, "Should have 3 nodes");
+  assert.strictEqual(elements.nodes.length, 3, "Should have 3 nodes");
 
-  const nodeC = nodes.find((n) => n.data.label === "C");
-  const edges = elements.filter((e) => e.data.target === nodeC?.data.id);
+  const nodeC = elements.nodes.find((n) => n.data.label === "C");
+  const edges = elements.edges.filter((e) => e.data.target === nodeC?.data.id);
   assert.strictEqual(edges.length, 2, "C should have edges from both A and B");
 });
 
@@ -86,18 +83,16 @@ test("interpret handles deep nesting", () => {
   const stack = stackify(ir);
   const elements = interpret(stack);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  assert.strictEqual(nodes.length, 1, "Should have 1 node");
-  assert.strictEqual(nodes[0].data.label, "A");
+  assert.strictEqual(elements.nodes.length, 1, "Should have 1 node");
+  assert.strictEqual(elements.nodes[0].data.label, "A");
 });
 
 test("interpret empty parallel block", () => {
   const ir = ["[", "(", ")", "A", "]"];
   const stack = stackify(ir);
   const elements = interpret(stack);
-
-  // Should handle gracefully
-  assert.ok(Array.isArray(elements), "Should return array");
+  assert.ok(Array.isArray(elements.nodes), "Should have nodes array");
+  assert.ok(Array.isArray(elements.edges), "Should have edges array");
 });
 
 test("stackify single command", () => {
@@ -105,7 +100,7 @@ test("stackify single command", () => {
   const stack = stackify(ir);
 
   assert.strictEqual(stack.type, "call", "Single command should be call type");
-  assert.strictEqual(stack.label, "A");
+  assert.strictEqual(stack.label, "A", "Should have correct label");
   assert.ok(stack.id, "Should have generated UUID");
 });
 
@@ -114,10 +109,13 @@ test("interpret preserves command IDs", () => {
   const stack = stackify(ir);
   const elements = interpret(stack);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  assert.strictEqual(nodes.length, 1);
-  assert.ok(nodes[0].data.id, "Node should have ID");
-  assert.strictEqual(nodes[0].data.label, "TEST");
+  assert.strictEqual(elements.nodes.length, 1, "Should have 1 node");
+  assert.ok(elements.nodes[0].data.id, "Node should have ID");
+  assert.strictEqual(
+    elements.nodes[0].data.label,
+    "TEST",
+    "Node should have correct label",
+  );
 });
 
 test("interpret complex parallel and sequential mix", () => {
@@ -125,19 +123,52 @@ test("interpret complex parallel and sequential mix", () => {
   const stack = stackify(ir);
   const elements = interpret(stack);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  assert.strictEqual(nodes.length, 5, "Should have 5 nodes: A, B, C, D, E");
+  assert.strictEqual(
+    elements.nodes.length,
+    5,
+    "Should have 5 nodes: A, B, C, D, E",
+  );
 
-  // E should be connected to both branches
-  const nodeE = nodes.find((n) => n.data.label === "E");
-  const edgesToE = elements.filter((e) => e.data.target === nodeE?.data.id);
+  assert.strictEqual(
+    elements.edges.length,
+    4,
+    "Should have edges from A,B to E and C,D to E",
+  );
+
+  assert.ok(
+    elements.nodes.find((e) => e.data.label === "A"),
+    "Should have node A",
+  );
+
+  assert.ok(
+    elements.nodes.find((e) => e.data.label === "B"),
+    "Should have node B",
+  );
+
+  assert.ok(
+    elements.nodes.find((e) => e.data.label === "C"),
+    "Should have node C",
+  );
+
+  assert.ok(
+    elements.nodes.find((e) => e.data.label === "D"),
+    "Should have node D",
+  );
+
+  assert.ok(
+    elements.nodes.find((e) => e.data.label === "E"),
+    "Should have node E",
+  );
+
+  const nodeE = elements.nodes.find((n) => n.data.label === "E");
+  const edgesToE = elements.edges.filter(
+    (e) => e.data.target === nodeE?.data.id,
+  );
   assert.strictEqual(edgesToE.length, 2, "E should have 2 incoming edges");
 });
 
 test("stackify handles mismatched brackets gracefully", () => {
   const ir = ["[", "A", ")"];
   const stack = stackify(ir);
-
-  // Should not crash, even if structure is invalid
   assert.ok(stack, "Should return some structure");
 });

@@ -3,7 +3,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileTests } from "@lezer/generator/dist/test";
 // @ts-expect-error
-import { parser as forkJoinParser } from "../out/forkJoinParser.js";
+import { parser as forkJoinParser } from "../out/forkjoin/parser.js";
 
 const corpusDir = "test/grammar/forkjoin/corpus";
 

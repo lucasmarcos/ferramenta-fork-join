@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/forkJoinParser.js";
 import { lintForkJoin } from "../out/forkjoin/lint.js";
+import { parser } from "../out/forkjoin/parser.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { treewalk } from "../out/forkjoin/treewalk.js";
 
@@ -117,12 +117,8 @@ test("stress: complex pipeline generates correct graph size", () => {
   const tree = parser.parse(complexCode);
   const walked = treewalk(complexCode, tree);
   const elements = resolve(walked.threads);
-
-  const nodes = elements.filter((e) => e.data.label);
-  const edges = elements.filter((e) => e.data.source);
-
-  assert.strictEqual(nodes.length, 19, "Should have 19 nodes");
-  assert.strictEqual(edges.length, 25, "Should have 25 edges");
+  assert.strictEqual(elements.nodes.length, 19, "Should have 19 nodes");
+  assert.strictEqual(elements.edges.length, 25, "Should have 25 edges");
 });
 
 test("stress: complex pipeline has all expected nodes", () => {
@@ -130,9 +126,7 @@ test("stress: complex pipeline has all expected nodes", () => {
   const walked = treewalk(complexCode, tree);
   const elements = resolve(walked.threads);
 
-  const nodeLabels = elements
-    .filter((e) => e.data.label)
-    .map((e) => e.data.label);
+  const nodeLabels = elements.nodes.map((e) => e.data.label);
 
   const expectedNodes = [
     "START",

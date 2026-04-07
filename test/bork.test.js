@@ -43,7 +43,23 @@ ROT_H:
 test("borked", () => {
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
-  const _elements = resolve(walked.threads);
+  const elements = resolve(walked.threads);
 
-  assert.ok(false, "should have edges d -> e and d -> g");
+  const nodeD = elements.nodes.find((n) => n.data.label === "D");
+  const nodeE = elements.nodes.find((n) => n.data.label === "E");
+  const nodeG = elements.nodes.find((n) => n.data.label === "G");
+
+  assert.ok(nodeD, "D exists");
+  assert.ok(nodeE, "E exists");
+  assert.ok(nodeG, "G exists");
+
+  const edgeDE = elements.edges.find(
+    (e) => e.data.source === nodeD.data.id && e.data.target === nodeE.data.id,
+  );
+  const edgeDG = elements.edges.find(
+    (e) => e.data.source === nodeD.data.id && e.data.target === nodeG.data.id,
+  );
+
+  assert.ok(edgeDE, "should have edge d -> e");
+  assert.ok(edgeDG, "should have edge d -> g");
 });

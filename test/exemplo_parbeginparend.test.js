@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/parBeginParEndParser.js";
 import { exampleParbeginParend } from "../out/parbeginparend/example.js";
+import { parser } from "../out/parbeginparend/parser.js";
 
 test("exemplo.ts: exampleParbeginParend parses successfully", () => {
   const tree = parser.parse(exampleParbeginParend);

@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/forkJoinParser.js";
+import { parser } from "../out/forkjoin/parser.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { checkSyntax } from "../out/forkjoin/syntax.js";
 import { treewalk } from "../out/forkjoin/treewalk.js";
@@ -113,13 +113,12 @@ test("special characters in commands", () => {
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => !e.data.source);
   assert.ok(
-    nodes.some((n) => n.data.label === "A_B_C"),
+    elements.nodes.some((n) => n.data.label === "A_B_C"),
     "Should handle underscores",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "X123"),
+    elements.nodes.some((n) => n.data.label === "X123"),
     "Should handle numbers",
   );
 });
@@ -149,17 +148,16 @@ test("consecutive FORKs", () => {
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => !e.data.source);
   assert.ok(
-    nodes.some((n) => n.data.label === "B"),
+    elements.nodes.some((n) => n.data.label === "B"),
     "Should fork to B",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "C"),
+    elements.nodes.some((n) => n.data.label === "C"),
     "Should fork to C",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "D"),
+    elements.nodes.some((n) => n.data.label === "D"),
     "Should fork to D",
   );
 });
@@ -213,9 +211,9 @@ test("resolve with empty threads map", () => {
   const threads = new Map();
   const elements = resolve(threads);
 
-  assert.ok(Array.isArray(elements), "Should return array");
+  assert.ok(Array.isArray(elements.nodes), "Should return array");
   assert.strictEqual(
-    elements.length,
+    elements.nodes.length,
     0,
     "Empty threads should produce no elements",
   );
@@ -226,7 +224,10 @@ test("resolve with single thread", () => {
   threads.set("0", [{ id: "1", label: "A", forks: [], joins: [] }]);
 
   const elements = resolve(threads);
-  assert.ok(elements.length > 0, "Should produce elements for single thread");
+  assert.ok(
+    elements.nodes.length > 0,
+    "Should produce elements for single thread",
+  );
 });
 
 test("command with very short label", () => {
@@ -239,10 +240,7 @@ QUIT;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-
-  const nodes = elements.filter((e) => !e.data.source);
-
-  const nodeX = nodes.find((n) => n.data.label === "X");
+  const nodeX = elements.nodes.find((n) => n.data.label === "X");
   assert.ok(nodeX, "Should have node X");
 });
 

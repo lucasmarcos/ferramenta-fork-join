@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/forkJoinParser.js";
 import { exampleForkJoin } from "../out/forkjoin/example.js";
+import { parser } from "../out/forkjoin/parser.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { treewalk } from "../out/forkjoin/treewalk.js";
 
@@ -33,14 +33,13 @@ test("exemplo.ts: exemploInicialForkJoin resolves to graph", () => {
   const walked = treewalk(exampleForkJoin, tree);
   const elements = resolve(walked.threads);
 
-  assert.ok(Array.isArray(elements), "Should resolve to elements array");
-  assert.ok(elements.length > 0, "Should have graph elements");
+  assert.ok(elements, "Should resolve to elements");
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const edges = elements.filter((e) => e.data.source && e.data.target);
+  assert.ok(Array.isArray(elements.nodes), "Should resolve to nodes array");
+  assert.ok(Array.isArray(elements.edges), "Should resolve to edges array");
 
-  assert.ok(nodes.length > 0, "Should have nodes");
-  assert.ok(edges.length > 0, "Should have edges");
+  assert.ok(elements.nodes.length > 0, "Should have nodes on graph");
+  assert.ok(elements.edges.length > 0, "Should have edges on graph");
 });
 
 test("exemplo.ts: exemploInicialForkJoin has expected nodes", () => {
@@ -48,8 +47,7 @@ test("exemplo.ts: exemploInicialForkJoin has expected nodes", () => {
   const walked = treewalk(exampleForkJoin, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const labels = nodes.map((n) => n.data.label);
+  const labels = elements.nodes.map((n) => n.data.label);
 
   assert.ok(labels.includes("C1"), "Should have node C1");
   assert.ok(labels.includes("C2"), "Should have node C2");
@@ -103,23 +101,24 @@ test("exemplo.ts: exemploInicialForkJoin graph connectivity", () => {
   const walked = treewalk(exampleForkJoin, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const edges = elements.filter((e) => e.data.source && e.data.target);
-
-  const c1Node = nodes.find((n) => n.data.label === "C1");
+  const c1Node = elements.nodes.find((n) => n.data.label === "C1");
   assert.ok(c1Node, "Should have C1 node");
 
-  const c1Edges = edges.filter((e) => e.data.source === c1Node.data.id);
+  const c1Edges = elements.edges.filter(
+    (e) => e.data.source === c1Node.data.id,
+  );
   assert.strictEqual(
     c1Edges.length,
     2,
     "C1 should have 2 outgoing edges (fork)",
   );
 
-  const c4Node = nodes.find((n) => n.data.label === "C4");
+  const c4Node = elements.nodes.find((n) => n.data.label === "C4");
   assert.ok(c4Node, "Should have C4 node");
 
-  const c4Edges = edges.filter((e) => e.data.target === c4Node.data.id);
+  const c4Edges = elements.edges.filter(
+    (e) => e.data.target === c4Node.data.id,
+  );
   assert.strictEqual(
     c4Edges.length,
     2,
@@ -160,17 +159,15 @@ test("exemplo.ts: exemploInicialForkJoin is valid educational example", () => {
   );
   assert.strictEqual(parseErrors.length, 0, "Should be syntactically valid");
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
   assert.ok(
-    nodes.length >= 3,
+    elements.nodes.length >= 3,
     "Should have multiple nodes to demonstrate parallelism",
   );
 
   assert.ok(walked.threads.has("VAR_J"), "Should demonstrate synchronization");
 
-  const edges = elements.filter((e) => e.data.source && e.data.target);
   assert.ok(
-    edges.length >= 3,
+    elements.edges.length >= 3,
     "Should have enough edges for meaningful visualization",
   );
 });

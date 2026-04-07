@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/forkJoinParser.js";
+import { parser } from "../out/forkjoin/parser.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { treewalk } from "../out/forkjoin/treewalk.js";
 
@@ -14,11 +14,8 @@ QUIT;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
-
-  const edges = elements.filter((e) => e.data.source && e.data.target);
-
   assert.strictEqual(
-    edges.length,
+    elements.edges.length,
     2,
     "Should have 2 edges for 3 sequential nodes",
   );
@@ -44,8 +41,7 @@ SYNC:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const finalNode = nodes.find((n) => n.data.label === "FINAL");
+  const finalNode = elements.nodes.find((n) => n.data.label === "FINAL");
 
   assert.ok(finalNode, "Should have FINAL node as sync point");
 });
@@ -61,17 +57,15 @@ QUIT;
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-
   assert.ok(
-    nodes.find((n) => n.data.label === "AB"),
+    elements.nodes.find((n) => n.data.label === "AB"),
     "Should have AB node",
   );
   assert.ok(
-    nodes.find((n) => n.data.label === "VERYLONGNAME"),
+    elements.nodes.find((n) => n.data.label === "VERYLONGNAME"),
     "Should have VERYLONGNAME node",
   );
-  assert.strictEqual(nodes.length, 3, "Should have 3 nodes");
+  assert.strictEqual(elements.nodes.length, 3, "Should have 3 nodes");
 });
 
 test("resolve handles thread with only QUIT", () => {
@@ -88,7 +82,10 @@ EMPTY:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  assert.ok(Array.isArray(elements));
+  assert.ok(
+    Array.isArray(elements.nodes) && Array.isArray(elements.edges),
+    "Should return nodes and edges arrays",
+  );
 });
 
 test("resolve with circular reference attempt", () => {
@@ -110,8 +107,14 @@ A_LABEL:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  assert.ok(Array.isArray(elements));
-  assert.ok(elements.length > 0);
+  assert.ok(
+    Array.isArray(elements.nodes) && Array.isArray(elements.edges),
+    "Should return nodes and edges arrays",
+  );
+  assert.ok(
+    elements.nodes.length > 0 && elements.edges.length > 0,
+    "Should have some nodes and edges",
+  );
 });
 
 test("resolve maintains thread independence", () => {
@@ -134,18 +137,16 @@ T2:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-
   assert.ok(
-    nodes.some((n) => n.data.label === "X"),
+    elements.nodes.some((n) => n.data.label === "X"),
     "T1 should have X",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "Y"),
+    elements.nodes.some((n) => n.data.label === "Y"),
     "T2 should have Y",
   );
   assert.ok(
-    nodes.some((n) => n.data.label === "MAIN"),
+    elements.nodes.some((n) => n.data.label === "MAIN"),
     "Main thread should continue",
   );
 });
@@ -162,8 +163,7 @@ QUIT;
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const ids = nodes.map((n) => n.data.id);
+  const ids = elements.nodes.map((n) => n.data.id);
   const uniqueIds = new Set(ids);
 
   assert.strictEqual(
@@ -202,8 +202,7 @@ SYNC2:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const labels = nodes.map((n) => n.data.label);
+  const labels = elements.nodes.map((n) => n.data.label);
 
   assert.ok(labels.includes("A"), "Should have A");
   assert.ok(labels.includes("B"), "Should have B");
@@ -217,10 +216,9 @@ test("resolve with command that has no connections", () => {
   threads.set("0", [{ id: "1", label: "ISOLATED", forks: [], joins: [] }]);
 
   const elements = resolve(threads);
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
 
-  assert.strictEqual(nodes.length, 1);
-  assert.strictEqual(nodes[0].data.label, "ISOLATED");
+  assert.strictEqual(elements.nodes.length, 1);
+  assert.strictEqual(elements.nodes[0].data.label, "ISOLATED");
 });
 
 test("resolve handles thread that joins immediately", () => {
@@ -241,5 +239,8 @@ SYNC:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  assert.ok(Array.isArray(elements));
+  assert.ok(
+    Array.isArray(elements.nodes) && Array.isArray(elements.edges),
+    "Should return nodes and edges arrays",
+  );
 });

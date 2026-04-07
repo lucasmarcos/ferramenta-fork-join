@@ -1,8 +1,8 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/forkJoinParser.js";
 import { getActionsForError } from "../out/forkjoin/actions.js";
 import { lintForkJoin } from "../out/forkjoin/lint.js";
+import { parser } from "../out/forkjoin/parser.js";
 import { checkSyntax } from "../out/forkjoin/syntax.js";
 
 test("syntax: missing semicolon after Call", () => {

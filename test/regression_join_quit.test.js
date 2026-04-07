@@ -1,11 +1,9 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/forkJoinParser.js";
+import { parser } from "../out/forkjoin/parser.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { treewalk } from "../out/forkjoin/treewalk.js";
 
-// REGRESSION TEST: Ensure JOIN with QUIT is processed correctly
-// This bug caused missing nodes in the graph when JOIN included QUIT
 test("REGRESSION: JOIN with QUIT must process JOIN logic", () => {
   const code = `VAR_J = 2;
 
@@ -25,13 +23,11 @@ ROT_FIM:
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  // Critical: The JOIN must create a thread for the control variable
   assert.ok(
     walked.threads.has("VAR_J"),
     "JOIN must create thread for control variable",
   );
 
-  // Critical: The ROT_D thread must have joinOn property
   const rotDThread = Array.from(walked.threads.entries()).find(([_id, cmds]) =>
     cmds.some((c) => c.label === "D"),
   );
@@ -39,9 +35,7 @@ ROT_FIM:
   const hasJoinOn = rotDThread[1].some((cmd) => cmd.joinOn === "VAR_J");
   assert.ok(hasJoinOn, "ROT_D thread must have joinOn for VAR_J");
 
-  // Critical: All nodes must appear in resolved graph
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const labels = nodes.map((n) => n.data.label);
+  const labels = elements.nodes.map((n) => n.data.label);
 
   assert.ok(labels.includes("A"), "Must have node A");
   assert.ok(labels.includes("D"), "Must have node D");
@@ -73,7 +67,6 @@ SYNC:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // All threads should have joinOn
   let joinCount = 0;
   walked.threads.forEach((cmds) => {
     if (cmds.some((c) => c.joinOn === "VAR_BARRIER")) {
@@ -84,8 +77,7 @@ SYNC:
   assert.strictEqual(joinCount, 3, "All 3 threads should join to VAR_BARRIER");
 
   const elements = resolve(walked.threads);
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  const labels = nodes.map((n) => n.data.label);
+  const labels = elements.nodes.map((n) => n.data.label);
 
   assert.ok(labels.includes("FINAL"), "Sync point must appear");
 });
@@ -101,7 +93,7 @@ QUIT;
 T1:
   WORK;
   JOIN VAR_J, SYNC;
-  
+
 SYNC:
   FINAL;
   QUIT;
@@ -110,7 +102,6 @@ SYNC:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // Should process JOIN even without QUIT in same statement
   const t1Thread = Array.from(walked.threads.entries()).find(([_id, cmds]) =>
     cmds.some((c) => c.label === "WORK"),
   );
@@ -129,6 +120,8 @@ QUIT;
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const nodes = elements.filter((e) => e.data.id && e.data.label);
-  assert.strictEqual(nodes.length, 2, "Should have A and B");
+  assert.strictEqual(elements.nodes.length, 2, "Should have 2 nodes");
+  const labels = elements.nodes.map((n) => n.data.label);
+  assert.ok(labels.includes("A"), "Should have A");
+  assert.ok(labels.includes("B"), "Should have B");
 });

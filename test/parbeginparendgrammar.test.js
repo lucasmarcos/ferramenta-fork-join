@@ -3,7 +3,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileTests } from "@lezer/generator/dist/test";
 // @ts-expect-error
-import { parser as parbeginParendParser } from "../out/parBeginParEndParser.js";
+import { parser as parbeginParendParser } from "../out/parbeginparend/parser.js";
 
 const corpusDir = "test/grammar/parbeginparend/corpus";
 

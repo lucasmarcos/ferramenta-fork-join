@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { parser } from "../out/forkJoinParser.js";
+import { parser } from "../out/forkjoin/parser.js";
 import { checkSyntax } from "../out/forkjoin/syntax.js";
 
 test("detecta erro", () => {
