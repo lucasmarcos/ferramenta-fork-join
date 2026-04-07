@@ -1,10 +1,3 @@
-export interface VarDef {
-  name: string;
-  start: number;
-  end: number;
-  value: number;
-}
-
 export interface ValidationError {
   type: "unused-variable" | "variable-mismatch";
   message: string;
