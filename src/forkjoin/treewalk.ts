@@ -1,6 +1,5 @@
-import type { Action } from "@codemirror/lint";
-import type { Tree, TreeCursor } from "@lezer/common";
-import { recursivo } from "./recursivo.js";
+import type { Tree } from "@lezer/common";
+import { type ValidationError, validateVariables } from "./validation.js";
 
 export interface Command {
   id?: string;
@@ -11,12 +10,21 @@ export interface Command {
   joinOn?: string;
 }
 
+export type ErrorType =
+  | "fork-missing-label"
+  | "join-missing-label"
+  | "join-missing-variable"
+  | "join-missing-quit"
+  | "code-after-quit"
+  | "recursive-call";
+
 export interface IError {
+  type: ErrorType;
   message: string;
   start: number;
   end: number;
-  actions: Action[];
-  severity?: string;
+  severity: string;
+  label?: string;
 }
 
 interface ParsedCommand {
@@ -26,364 +34,257 @@ interface ParsedCommand {
   children: Array<{ name: string; from: number; to: number; text: string }>;
 }
 
-let blockMap: Map<string, ParsedCommand[]>;
-let currentBlock: string;
-let variables: Map<string, number>;
-let variableDef: Map<string, { start: number; end: number; value: number }>;
-let joinCalls: Map<string, number>;
+interface Context {
+  doc: string;
+  blocks: Map<string, ParsedCommand[]>;
+  variables: Map<string, number>;
+  variableDefs: Map<string, { start: number; end: number; value: number }>;
+  joinCounts: Map<string, number>;
+  threads: Map<string, Command[]>;
+  errors: IError[];
+  currentThread: string;
+}
 
-let threads: Map<string, Command[]>;
-let currentThread: string;
+const parseBlocks = (doc: string, tree: Tree): Map<string, ParsedCommand[]> => {
+  const blocks = new Map<string, ParsedCommand[]>();
+  let currentBlock = "";
 
-let errors: IError[];
-
-let depth: number;
-let secondRound: boolean;
-
-const getLabelText = (doc: string, cursor: TreeCursor): string => {
-  return doc.slice(cursor.from, cursor.to);
-};
-
-const mapCommand = (doc: string, cursor: TreeCursor) => {
-  if (cursor.name === "Def") {
-    cursor.firstChild();
-    currentBlock = getLabelText(doc, cursor);
-    cursor.parent();
-  } else {
-    if (!blockMap.has(currentBlock)) {
-      blockMap.set(currentBlock, []);
-    }
-
-    const cmd: ParsedCommand = {
-      name: cursor.name,
-      from: cursor.from,
-      to: cursor.to,
-      children: [],
-    };
-
-    if (cursor.firstChild()) {
-      do {
-        cmd.children.push({
-          name: cursor.name,
-          from: cursor.from,
-          to: cursor.to,
-          text: doc.slice(cursor.from, cursor.to),
-        });
-      } while (cursor.nextSibling());
-      cursor.parent();
-    }
-
-    blockMap.get(currentBlock)?.push(cmd);
-  }
-};
-
-const doMap = (doc: string, tree: Tree) => {
   const cursor = tree.cursor();
-  if (!cursor.firstChild()) return; // Into Program
+  if (!cursor.firstChild()) return blocks;
 
   do {
-    mapCommand(doc, cursor);
+    if (cursor.name === "Def") {
+      cursor.firstChild();
+      currentBlock = doc.slice(cursor.from, cursor.to);
+      cursor.parent();
+      if (!blocks.has(currentBlock)) blocks.set(currentBlock, []);
+    } else {
+      if (!blocks.has(currentBlock)) blocks.set(currentBlock, []);
+
+      const cmd: ParsedCommand = {
+        name: cursor.name,
+        from: cursor.from,
+        to: cursor.to,
+        children: [],
+      };
+
+      if (cursor.firstChild()) {
+        do {
+          cmd.children.push({
+            name: cursor.name,
+            from: cursor.from,
+            to: cursor.to,
+            text: doc.slice(cursor.from, cursor.to),
+          });
+        } while (cursor.nextSibling());
+        cursor.parent();
+      }
+
+      blocks.get(currentBlock)?.push(cmd);
+    }
   } while (cursor.nextSibling());
+
+  return blocks;
 };
 
-const process = (command: ParsedCommand) => {
-  switch (command.name) {
-    case "Assign": {
-      const label = command.children.find((c) => c.name === "Label")?.text;
-      const numStr = command.children.find((c) => c.name === "Number")?.text;
-      if (label && numStr) {
-        variables.set(label, Number.parseInt(numStr, 10));
-        variableDef.set(label, {
-          start: command.from,
-          end: command.to,
-          value: Number.parseInt(numStr, 10),
-        });
-      }
-      break;
-    }
-
-    case "Call": {
-      const label = command.children.find((c) => c.name === "Label")?.text;
-      if (label) {
-        if (blockMap.has(label)) {
-          execute(blockMap.get(label) ?? []);
-        } else {
-          const thread = threads.get(currentThread);
-          if (thread) {
-            thread.push({ id: crypto.randomUUID(), label: label });
-          }
-        }
-      }
-      break;
-    }
-
-    case "Fork": {
-      const label = command.children.find((c) => c.name === "Label")?.text;
-
-      if (label && blockMap.has(label)) {
-        const id = crypto.randomUUID();
-        threads.get(currentThread)?.push({ forkTo: id });
-        threads.set(id, [{ fork: label }]);
-      } else if (label) {
-        errors.push({
-          message: "Chamada FORK para rótulo que não existe",
-          start: command.from,
-          end: command.to,
-          actions: [
-            {
-              name: "Criar",
-              apply(view, _from, _to) {
-                view.dispatch({
-                  changes: {
-                    from: view.state.doc.length,
-                    to: view.state.doc.length,
-                    insert: `\n${label}:\n  QUIT;\n`,
-                  },
-                });
-              },
-            },
-          ],
-        });
-      }
-      break;
-    }
-
-    case "Join": {
-      const labels = command.children.filter((c) => c.name === "Label");
-      const controlVar = labels[0]?.text;
-      const targetLabel = labels[1]?.text;
-      const quitNode = command.children.find((c) => c.text === "QUIT");
-
-      if (targetLabel && blockMap.has(targetLabel)) {
-        if (!secondRound) {
-          if (controlVar && joinCalls.has(controlVar)) {
-            const calls = joinCalls.get(controlVar) ?? 0;
-            joinCalls.set(controlVar, calls + 1);
-          } else if (controlVar) {
-            joinCalls.set(controlVar, 1);
-          }
-        }
-
-        if (controlVar) {
-          const thread = threads.get(currentThread);
-          if (thread) {
-            thread.push({ joinOn: controlVar });
-          }
-          threads.set(controlVar, [{ join: targetLabel }]);
-        }
-      } else if (targetLabel) {
-        errors.push({
-          message: "Chamada JOIN para rótulo que não existe",
-          start: command.from,
-          end: command.to,
-          actions: [
-            {
-              name: "Criar",
-              apply(view, _from, _to) {
-                view.dispatch({
-                  changes: {
-                    from: view.state.doc.length,
-                    to: view.state.doc.length,
-                    insert: `\n${targetLabel}:\n  QUIT;\n`,
-                  },
-                });
-              },
-            },
-          ],
-        });
-      }
-
-      if (controlVar && !variables.has(controlVar)) {
-        errors.push({
-          message: "Chamada JOIN usando variável de controle que não existe",
-          start: command.from,
-          end: command.to,
-          actions: [
-            {
-              name: "Criar",
-              apply(view, _from, _to) {
-                view.dispatch({
-                  changes: { from: 0, to: 0, insert: `${controlVar} = 1;\n` },
-                });
-              },
-            },
-          ],
-        });
-      }
-
-      if (!quitNode) {
-        errors.push({
-          message: "A última chamada em um JOIN deve ser QUIT",
-          severity: "error",
-          start: command.from,
-          end: command.to,
-          actions: [
-            {
-              name: "Trocar",
-              apply(view, from, to) {
-                view.dispatch({ changes: { from, to, insert: "QUIT" } });
-              },
-            },
-          ],
-        });
-      }
-
-      break;
-    }
-  }
+const getLabel = (cmd: ParsedCommand, index = 0): string | undefined => {
+  const labels = cmd.children.filter((c) => c.name === "Label");
+  return labels[index]?.text;
 };
 
-const execute = (commands: ParsedCommand[]) => {
-  depth++;
+const hasQuit = (cmd: ParsedCommand): boolean =>
+  cmd.children.some((c) => c.text === "QUIT");
 
-  let quit = false;
-
-  if (depth >= 1000) {
-    errors.push({
+const executeBlock = (ctx: Context, blockName: string, depth = 0): void => {
+  if (depth > 100) {
+    ctx.errors.push({
+      type: "recursive-call",
       message: "Chamadas recursivas não são permitidas",
       start: 0,
       end: 0,
-      actions: [],
+      severity: "error",
     });
     return;
   }
 
-  for (const command of commands) {
-    const isQuit = command.children.some((c) => c.text === "QUIT");
-    const isJoin = command.name === "Join";
+  const commands = ctx.blocks.get(blockName) ?? [];
+  let quit = false;
 
-    if (isJoin) {
-      quit = true;
-      process(command);
-    } else if (isQuit) {
-      quit = true;
-    } else {
-      if (quit) {
-        errors.push({
-          message: "Chamada de função após o QUIT",
-          severity: "warning",
-          start: command.from,
-          end: command.to,
-          actions: [
-            {
-              name: "Remover",
-              apply(view, from, to) {
-                view.dispatch({
-                  changes: {
-                    from,
-                    to: Math.min(to + 1, view.state.doc.length),
-                  },
-                });
-              },
-            },
-          ],
-        });
-      } else {
-        process(command);
+  for (const cmd of commands) {
+    if (quit && cmd.name !== "Join") {
+      ctx.errors.push({
+        type: "code-after-quit",
+        message: "Chamada de função após o QUIT",
+        start: cmd.from,
+        end: cmd.to,
+        severity: "warning",
+      });
+      continue;
+    }
+
+    switch (cmd.name) {
+      case "Assign": {
+        const label = getLabel(cmd);
+        const numStr = cmd.children.find((c) => c.name === "Number")?.text;
+        if (label && numStr) {
+          const value = Number.parseInt(numStr, 10);
+          ctx.variables.set(label, value);
+          ctx.variableDefs.set(label, {
+            start: cmd.from,
+            end: cmd.to,
+            value,
+          });
+        }
+        break;
       }
+
+      case "Call": {
+        const label = getLabel(cmd);
+        if (!label || label === "QUIT") break;
+
+        if (ctx.blocks.has(label)) {
+          executeBlock(ctx, label, depth + 1);
+        } else {
+          ctx.threads.get(ctx.currentThread)?.push({
+            id: crypto.randomUUID(),
+            label,
+          });
+        }
+        break;
+      }
+
+      case "Fork": {
+        const label = getLabel(cmd);
+        if (!label) break;
+
+        if (ctx.blocks.has(label)) {
+          const id = crypto.randomUUID();
+          ctx.threads.get(ctx.currentThread)?.push({ forkTo: id });
+          ctx.threads.set(id, [{ fork: label }]);
+        } else {
+          ctx.errors.push({
+            type: "fork-missing-label",
+            message: "Chamada FORK para rótulo que não existe",
+            start: cmd.from,
+            end: cmd.to,
+            severity: "error",
+            label,
+          });
+        }
+        break;
+      }
+
+      case "Join": {
+        const controlVar = getLabel(cmd, 0);
+        const targetLabel = getLabel(cmd, 1);
+
+        if (controlVar && !ctx.variables.has(controlVar)) {
+          ctx.errors.push({
+            type: "join-missing-variable",
+            message: "Chamada JOIN usando variável de controle que não existe",
+            start: cmd.from,
+            end: cmd.to,
+            severity: "error",
+            label: controlVar,
+          });
+        }
+
+        if (!hasQuit(cmd)) {
+          ctx.errors.push({
+            type: "join-missing-quit",
+            message: "A última chamada em um JOIN deve ser QUIT",
+            start: cmd.from,
+            end: cmd.to,
+            severity: "error",
+          });
+        }
+
+        if (targetLabel && ctx.blocks.has(targetLabel)) {
+          if (controlVar) {
+            ctx.joinCounts.set(
+              controlVar,
+              (ctx.joinCounts.get(controlVar) ?? 0) + 1,
+            );
+            ctx.threads.get(ctx.currentThread)?.push({ joinOn: controlVar });
+            ctx.threads.set(controlVar, [{ join: targetLabel }]);
+          }
+        } else if (targetLabel) {
+          ctx.errors.push({
+            type: "join-missing-label",
+            message: "Chamada JOIN para rótulo que não existe",
+            start: cmd.from,
+            end: cmd.to,
+            severity: "error",
+            label: targetLabel,
+          });
+        }
+
+        quit = true;
+        break;
+      }
+    }
+
+    if (hasQuit(cmd)) quit = true;
+  }
+};
+
+const resolvePendingThreads = (ctx: Context): void => {
+  const pending = new Set<string>();
+
+  for (const [id, cmds] of ctx.threads) {
+    if (id !== "0" && cmds.length === 1 && (cmds[0].fork || cmds[0].join)) {
+      pending.add(id);
     }
   }
 
-  depth--;
-};
+  let iterations = 0;
+  while (pending.size > 0 && iterations++ < 100) {
+    for (const id of [...pending]) {
+      const cmd = ctx.threads.get(id)?.[0];
+      if (!cmd) {
+        pending.delete(id);
+        continue;
+      }
 
-export const treewalk = (doc: string, tree: Tree) => {
-  currentBlock = "";
-  blockMap = new Map();
-  variables = new Map();
-  variableDef = new Map();
-  joinCalls = new Map();
-  threads = new Map();
-  currentThread = "0";
-  threads.set(currentThread, []);
-  errors = [];
+      const blockName = cmd.fork || cmd.join;
+      if (!blockName || !ctx.blocks.has(blockName)) {
+        pending.delete(id);
+        continue;
+      }
 
-  depth = 1;
-  secondRound = false;
+      ctx.currentThread = id;
+      ctx.threads.set(id, []);
+      executeBlock(ctx, blockName);
+      pending.delete(id);
 
-  doMap(doc, tree);
-  recursivo(blockMap);
-  execute(blockMap.get("") || []);
-
-  threads.forEach((_k, v) => {
-    if (v !== "0") {
-      const t = threads.get(v)?.[0];
-
-      currentThread = v;
-      threads.set(currentThread, []);
-
-      if (t) {
-        if (t.fork && blockMap.has(t.fork)) {
-          execute(blockMap.get(t.fork) ?? []);
-        } else if (t.join && blockMap.has(t.join)) {
-          execute(blockMap.get(t.join) ?? []);
+      for (const [newId, newCmds] of ctx.threads) {
+        if (newCmds.length === 1 && (newCmds[0].fork || newCmds[0].join)) {
+          pending.add(newId);
         }
       }
     }
-  });
-
-  secondRound = true;
-
-  for (let i = 0; i < 3; i++) {
-    threads.forEach((k, v) => {
-      if (k[0]?.fork && blockMap.has(k[0].fork)) {
-        currentThread = v;
-        threads.set(currentThread, []);
-        execute(blockMap.get(k[0].fork) ?? []);
-      } else if (k[0]?.join && blockMap.has(k[0].join)) {
-        currentThread = v;
-        threads.set(currentThread, []);
-        execute(blockMap.get(k[0].join) ?? []);
-      }
-    });
   }
+};
 
-  for (const [variable, def] of variableDef.entries()) {
-    if (!joinCalls.has(variable)) {
-      errors.push({
-        message: "Variável de controle é definida mas não utilizada",
-        start: def.start,
-        end: def.end,
-        severity: "warning",
-        actions: [
-          {
-            name: "Remover",
-            apply(view, from, to) {
-              view.dispatch({
-                changes: { from, to: Math.min(to + 1, view.state.doc.length) },
-              });
-            },
-          },
-        ],
-      });
-    } else {
-      const calls = joinCalls.get(variable) ?? 0;
-      const t = def.value;
+export type TreewalkError = IError | ValidationError;
 
-      if (calls !== t) {
-        errors.push({
-          message:
-            "O valor da variável de controle não corresponde ao número de JOINs",
-          start: def.start,
-          end: def.end,
-          actions: [
-            {
-              name: "Corrigir",
-              apply(view, _from, _to) {
-                view.dispatch({
-                  changes: {
-                    from: def.start,
-                    to: def.end,
-                    insert: `${variable} = ${calls};`,
-                  },
-                });
-              },
-            },
-          ],
-        });
-      }
-    }
-  }
+export const treewalk = (doc: string, tree: Tree) => {
+  const ctx: Context = {
+    doc,
+    blocks: parseBlocks(doc, tree),
+    variables: new Map(),
+    variableDefs: new Map(),
+    joinCounts: new Map(),
+    threads: new Map([["0", []]]),
+    errors: [],
+    currentThread: "0",
+  };
 
-  return { threads, errors };
+  executeBlock(ctx, "");
+  resolvePendingThreads(ctx);
+
+  const validationErrors = validateVariables(ctx.variableDefs, ctx.joinCounts);
+  const errors: TreewalkError[] = [...ctx.errors, ...validationErrors];
+
+  return { threads: ctx.threads, errors };
 };
