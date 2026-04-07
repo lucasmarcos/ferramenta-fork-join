@@ -31,13 +31,9 @@ import { stackify as stackifyParbeginParend } from "./parbeginparend/stack.js";
 type Mode = "fork-join" | "parbegin-parend";
 let currentMode: Mode = "fork-join";
 
-const editorViewElement = document.getElementById("editor");
-const graphContainer = document.getElementById("graph");
+const editorViewElement = document.getElementById("editor") as HTMLElement;
+const graphContainer = document.getElementById("graph") as HTMLElement;
 const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
-
-if (!editorViewElement || !graphContainer) {
-  throw new Error("Required DOM elements not found");
-}
 
 let editor: EditorView;
 const languageConf = new Compartment();
