@@ -10,7 +10,7 @@
     "@types/node": "^25.5.2",
     "@typescript/native-preview": "^7.0.0-dev.20260406.1",
     "codemirror": "^6.0.2",
-    "cytoscape": "^3.33.1",
+    "cytoscape": "^3.33.2",
     "cytoscape-dagre": "^2.5.0",
     "esbuild": "^0.28.0"
   },
