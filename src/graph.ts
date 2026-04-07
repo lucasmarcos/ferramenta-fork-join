@@ -4,15 +4,6 @@ import dagre from "cytoscape-dagre";
 
 cytoscape.use(dagre);
 
-export interface GraphElement {
-  data: {
-    id?: string;
-    label?: string;
-    source?: string;
-    target?: string;
-  };
-}
-
 export const renderGraph = (
   container: HTMLElement,
   elements: ElementsDefinition,
