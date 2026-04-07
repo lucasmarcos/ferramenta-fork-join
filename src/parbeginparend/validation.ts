@@ -5,7 +5,9 @@ export interface ValidationIssue {
     | "empty-sequential-block"
     | "empty-parallel-block"
     | "missing-end"
-    | "missing-parend";
+    | "missing-parend"
+    | "unexpected-end"
+    | "unexpected-parend";
   message: string;
   start: number;
   end: number;
@@ -51,7 +53,15 @@ export const validateStructure = (tree: Tree): ValidationIssue[] => {
 
       case "End": {
         const last = stack.pop();
-        if (last?.type === "begin" && last.childCount === 0) {
+        if (!last) {
+          issues.push({
+            type: "unexpected-end",
+            message: "END sem BEGIN correspondente",
+            start: cursor.from,
+            end: cursor.to,
+            severity: "warning",
+          });
+        } else if (last.type === "begin" && last.childCount === 0) {
           issues.push({
             type: "empty-sequential-block",
             message: "Bloco sequencial vazio",
@@ -65,7 +75,15 @@ export const validateStructure = (tree: Tree): ValidationIssue[] => {
 
       case "ParEnd": {
         const last = stack.pop();
-        if (last?.type === "parbegin" && last.childCount === 0) {
+        if (!last) {
+          issues.push({
+            type: "unexpected-parend",
+            message: "PAREND sem PARBEGIN correspondente",
+            start: cursor.from,
+            end: cursor.to,
+            severity: "warning",
+          });
+        } else if (last.type === "parbegin" && last.childCount === 0) {
           issues.push({
             type: "empty-parallel-block",
             message: "Bloco paralelo vazio",
