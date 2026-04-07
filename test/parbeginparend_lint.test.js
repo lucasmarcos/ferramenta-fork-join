@@ -88,6 +88,44 @@ test("parbegin/parend lint: empty sequential block has removal suggestion", () =
   assert.strictEqual(warning.actions[0].name, "Remover");
 });
 
+test("parbegin/parend lint: mismatched END closing PARBEGIN is reported", () => {
+  const result = lintParBeginParEnd(`PARBEGIN
+  BEGIN
+    A;
+  END
+END`);
+  const mismatch = result.diagnostics.find((diag) =>
+    diag.message.includes("use PAREND"),
+  );
+  const missing = result.diagnostics.find((diag) =>
+    diag.message.includes("sem PAREND"),
+  );
+
+  assert.strictEqual(result.hasErrors, false);
+  assert.ok(mismatch, "Should report mismatched END for PARBEGIN");
+  assert.ok(missing, "Should still report the missing PAREND");
+  assert.strictEqual(mismatch.actions.length, 1);
+  assert.strictEqual(mismatch.actions[0].name, "Remover");
+});
+
+test("parbegin/parend lint: mismatched PAREND closing BEGIN is reported", () => {
+  const result = lintParBeginParEnd(`BEGIN
+  A;
+PAREND`);
+  const mismatch = result.diagnostics.find((diag) =>
+    diag.message.includes("use END"),
+  );
+  const missing = result.diagnostics.find((diag) =>
+    diag.message.includes("sem END"),
+  );
+
+  assert.strictEqual(result.hasErrors, false);
+  assert.ok(mismatch, "Should report mismatched PAREND for BEGIN");
+  assert.ok(missing, "Should still report the missing END");
+  assert.strictEqual(mismatch.actions.length, 1);
+  assert.strictEqual(mismatch.actions[0].name, "Remover");
+});
+
 test("parbegin/parend lint: stray END has removal suggestion", () => {
   const result = lintParBeginParEnd(`A;
 B;

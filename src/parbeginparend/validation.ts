@@ -7,7 +7,9 @@ export interface ValidationIssue {
     | "missing-end"
     | "missing-parend"
     | "unexpected-end"
-    | "unexpected-parend";
+    | "unexpected-parend"
+    | "mismatched-end"
+    | "mismatched-parend";
   message: string;
   start: number;
   end: number;
@@ -52,7 +54,7 @@ export const validateStructure = (tree: Tree): ValidationIssue[] => {
       }
 
       case "End": {
-        const last = stack.pop();
+        const last = stack[stack.length - 1];
         if (!last) {
           issues.push({
             type: "unexpected-end",
@@ -61,20 +63,31 @@ export const validateStructure = (tree: Tree): ValidationIssue[] => {
             end: cursor.to,
             severity: "warning",
           });
-        } else if (last.type === "begin" && last.childCount === 0) {
+        } else if (last.type === "parbegin") {
           issues.push({
-            type: "empty-sequential-block",
-            message: "Bloco sequencial vazio",
-            start: last.start,
+            type: "mismatched-end",
+            message: "END fecha um PARBEGIN; use PAREND",
+            start: cursor.from,
             end: cursor.to,
             severity: "warning",
           });
+        } else {
+          stack.pop();
+          if (last.childCount === 0) {
+            issues.push({
+              type: "empty-sequential-block",
+              message: "Bloco sequencial vazio",
+              start: last.start,
+              end: cursor.to,
+              severity: "warning",
+            });
+          }
         }
         break;
       }
 
       case "ParEnd": {
-        const last = stack.pop();
+        const last = stack[stack.length - 1];
         if (!last) {
           issues.push({
             type: "unexpected-parend",
@@ -83,14 +96,25 @@ export const validateStructure = (tree: Tree): ValidationIssue[] => {
             end: cursor.to,
             severity: "warning",
           });
-        } else if (last.type === "parbegin" && last.childCount === 0) {
+        } else if (last.type === "begin") {
           issues.push({
-            type: "empty-parallel-block",
-            message: "Bloco paralelo vazio",
-            start: last.start,
+            type: "mismatched-parend",
+            message: "PAREND fecha um BEGIN; use END",
+            start: cursor.from,
             end: cursor.to,
             severity: "warning",
           });
+        } else {
+          stack.pop();
+          if (last.childCount === 0) {
+            issues.push({
+              type: "empty-parallel-block",
+              message: "Bloco paralelo vazio",
+              start: last.start,
+              end: cursor.to,
+              severity: "warning",
+            });
+          }
         }
         break;
       }

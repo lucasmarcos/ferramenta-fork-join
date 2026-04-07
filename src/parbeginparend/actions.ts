@@ -23,7 +23,9 @@ export const getActionsForError = (
     case "empty-sequential-block":
     case "empty-parallel-block":
     case "unexpected-end":
-    case "unexpected-parend": {
+    case "unexpected-parend":
+    case "mismatched-end":
+    case "mismatched-parend": {
       actions.push({
         name: "Remover",
         apply(view, from, to) {
