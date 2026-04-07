@@ -95,6 +95,34 @@ test("interpret empty parallel block", () => {
   assert.ok(Array.isArray(elements.edges), "Should have edges array");
 });
 
+test("stackify top-level bare calls as sequence", () => {
+  const ir = ["A", "B", "C"];
+  const stack = stackify(ir);
+
+  assert.strictEqual(
+    stack.type,
+    "seq",
+    "Multiple top-level calls should become seq",
+  );
+  assert.strictEqual(stack.child.length, 3, "Should keep all top-level calls");
+  assert.deepStrictEqual(
+    stack.child.map((node) => (node.type === "call" ? node.label : node.type)),
+    ["A", "B", "C"],
+  );
+});
+
+test("interpret handles top-level bare sequence", () => {
+  const ir = ["A", "B", "C"];
+  const stack = stackify(ir);
+  const elements = interpret(stack);
+
+  assert.deepStrictEqual(
+    elements.nodes.map((node) => node.data.label),
+    ["A", "B", "C"],
+  );
+  assert.strictEqual(elements.edges.length, 2, "Should have A -> B -> C");
+});
+
 test("stackify single command", () => {
   const ir = ["A"];
   const stack = stackify(ir);

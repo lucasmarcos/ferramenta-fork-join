@@ -35,12 +35,35 @@ const hasEdge = (elements, sourceLabel, targetLabel) =>
     ([source, target]) => source === sourceLabel && target === targetLabel,
   );
 
+test("parbegin/parend integration: bare top-level calls compile to a chain", () => {
+  const { ir, elements } = compile(`A;
+B;
+C;`);
+
+  assert.deepStrictEqual(ir, ["A", "B", "C"], "IR should keep bare calls");
+  assert.deepStrictEqual(
+    elements.nodes.map((node) => node.data.label),
+    ["A", "B", "C"],
+    "Should create nodes for all bare calls",
+  );
+  assert.deepStrictEqual(
+    edgePairs(elements),
+    [
+      ["A", "B"],
+      ["B", "C"],
+    ],
+    "Should create A -> B -> C for bare calls",
+  );
+});
+
 test("parbegin/parend integration: sequential program compiles to a chain", () => {
-  const { ir, elements } = compile(`BEGIN
-  A;
-  B;
-  C;
-END`);
+  const { ir, elements } = compile(`
+    BEGIN
+      A;
+      B;
+      C;
+    END
+  `);
 
   assert.deepStrictEqual(
     ir,
@@ -103,13 +126,13 @@ test("parbegin/parend integration: nested parallel branches merge correctly", ()
         BEGIN
           D;
         END
-      PAREND;
+      PAREND
       E;
     END
     BEGIN
       F;
     END
-  PAREND;
+  PAREND
   G;
 END`);
 
@@ -138,7 +161,7 @@ test("parbegin/parend integration: empty parallel block preserves sequential flo
   const { elements } = compile(`BEGIN
   A;
   PARBEGIN
-  PAREND;
+  PAREND
   B;
 END`);
 
@@ -163,7 +186,7 @@ BEGIN
     BEGIN
       C;
     END
-  PAREND;
+  PAREND
   D;
 END`);
 
