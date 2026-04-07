@@ -11,7 +11,7 @@ import { EditorView, keymap } from "@codemirror/view";
 import type { NodePropSource, Tree } from "@lezer/common";
 import { basicSetup } from "codemirror";
 import { parser as forkJoinParser } from "./forkJoinParser.js";
-import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
+import { exampleForkJoin } from "./forkjoin/example.js";
 import { forkJoinHighlight } from "./forkjoin/highlight.js";
 import { lintForkJoin } from "./forkjoin/lint.js";
 import { resolve as resolveForkJoin } from "./forkjoin/resolve.js";
@@ -19,7 +19,7 @@ import { treewalk as treewalkForkJoin } from "./forkjoin/treewalk.js";
 import type { GraphElement } from "./graph.js";
 import { renderGraph } from "./graph.js";
 import { parser as parbeginParendParser } from "./parBeginParEndParser.js";
-import { exploInicialParbeginParend } from "./parbeginparend/exemplo.js";
+import { exampleParbeginParend } from "./parbeginparend/example.js";
 import { parBeginParEndHighlight } from "./parbeginparend/highlight.js";
 import { interpret as interpretParbeginParend } from "./parbeginparend/interpret.js";
 import { parse as parseParbeginParend } from "./parbeginparend/ir.js";
@@ -41,13 +41,13 @@ const getModeData = (mode: Mode) => {
   if (mode === "fork-join") {
     return {
       parser: forkJoinParser,
-      example: exemploInicialForkJoin,
+      example: exampleForkJoin,
       name: "fork-join",
     };
   }
   return {
     parser: parbeginParendParser,
-    example: exploInicialParbeginParend,
+    example: exampleParbeginParend,
     name: "parbegin-parend",
   };
 };
@@ -143,7 +143,7 @@ const go = () => {
 };
 
 const initialCode =
-  decodeURI(document.location.hash.substring(1)) || exemploInicialForkJoin;
+  decodeURI(document.location.hash.substring(1)) || exampleForkJoin;
 
 editor = new EditorView({
   extensions: [

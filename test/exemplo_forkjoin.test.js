@@ -1,20 +1,20 @@
 import assert from "node:assert";
 import { test } from "node:test";
 import { parser } from "../out/forkJoinParser.js";
-import { exemploInicialForkJoin } from "../out/forkjoin/exemplo.js";
+import { exampleForkJoin } from "../out/forkjoin/example.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { treewalk } from "../out/forkjoin/treewalk.js";
 
 test("exemplo.ts: exemploInicialForkJoin parses successfully", () => {
-  const tree = parser.parse(exemploInicialForkJoin);
+  const tree = parser.parse(exampleForkJoin);
 
   assert.ok(tree, "Should parse example code");
   assert.ok(!tree.cursor().type.isError, "Should not have parse errors");
 });
 
 test("exemplo.ts: exemploInicialForkJoin walks successfully", () => {
-  const tree = parser.parse(exemploInicialForkJoin);
-  const walked = treewalk(exemploInicialForkJoin, tree);
+  const tree = parser.parse(exampleForkJoin);
+  const walked = treewalk(exampleForkJoin, tree);
 
   assert.ok(walked, "Should walk example code");
   assert.ok(walked.threads, "Should have threads");
@@ -29,8 +29,8 @@ test("exemplo.ts: exemploInicialForkJoin walks successfully", () => {
 });
 
 test("exemplo.ts: exemploInicialForkJoin resolves to graph", () => {
-  const tree = parser.parse(exemploInicialForkJoin);
-  const walked = treewalk(exemploInicialForkJoin, tree);
+  const tree = parser.parse(exampleForkJoin);
+  const walked = treewalk(exampleForkJoin, tree);
   const elements = resolve(walked.threads);
 
   assert.ok(Array.isArray(elements), "Should resolve to elements array");
@@ -44,8 +44,8 @@ test("exemplo.ts: exemploInicialForkJoin resolves to graph", () => {
 });
 
 test("exemplo.ts: exemploInicialForkJoin has expected nodes", () => {
-  const tree = parser.parse(exemploInicialForkJoin);
-  const walked = treewalk(exemploInicialForkJoin, tree);
+  const tree = parser.parse(exampleForkJoin);
+  const walked = treewalk(exampleForkJoin, tree);
   const elements = resolve(walked.threads);
 
   const nodes = elements.filter((e) => e.data.id && e.data.label);
@@ -60,8 +60,8 @@ test("exemplo.ts: exemploInicialForkJoin has expected nodes", () => {
 });
 
 test("exemplo.ts: exemploInicialForkJoin has correct structure", () => {
-  const tree = parser.parse(exemploInicialForkJoin);
-  const walked = treewalk(exemploInicialForkJoin, tree);
+  const tree = parser.parse(exampleForkJoin);
+  const walked = treewalk(exampleForkJoin, tree);
 
   assert.ok(walked.threads.has("0"), "Should have main thread");
 
@@ -83,8 +83,8 @@ test("exemplo.ts: exemploInicialForkJoin has correct structure", () => {
 });
 
 test("exemplo.ts: exemploInicialForkJoin variable validation", () => {
-  const tree = parser.parse(exemploInicialForkJoin);
-  const walked = treewalk(exemploInicialForkJoin, tree);
+  const tree = parser.parse(exampleForkJoin);
+  const walked = treewalk(exampleForkJoin, tree);
 
   const varErrors = walked.errors.filter((e) =>
     e.message.includes("variável de controle"),
@@ -99,8 +99,8 @@ test("exemplo.ts: exemploInicialForkJoin variable validation", () => {
 });
 
 test("exemplo.ts: exemploInicialForkJoin graph connectivity", () => {
-  const tree = parser.parse(exemploInicialForkJoin);
-  const walked = treewalk(exemploInicialForkJoin, tree);
+  const tree = parser.parse(exampleForkJoin);
+  const walked = treewalk(exampleForkJoin, tree);
   const elements = resolve(walked.threads);
 
   const nodes = elements.filter((e) => e.data.id && e.data.label);
@@ -128,14 +128,14 @@ test("exemplo.ts: exemploInicialForkJoin graph connectivity", () => {
 });
 
 test("exemplo.ts: exemploInicialForkJoin contains documentation comments", () => {
-  assert.ok(exemploInicialForkJoin.includes("//"), "Should contain comments");
+  assert.ok(exampleForkJoin.includes("//"), "Should contain comments");
   assert.ok(
-    exemploInicialForkJoin.includes("Bem-vindo"),
+    exampleForkJoin.includes("Bem-vindo"),
     "Should have Portuguese documentation",
   );
 
-  const tree = parser.parse(exemploInicialForkJoin);
-  const walked = treewalk(exemploInicialForkJoin, tree);
+  const tree = parser.parse(exampleForkJoin);
+  const walked = treewalk(exampleForkJoin, tree);
 
   const commentErrors = walked.errors.filter(
     (e) =>
@@ -151,8 +151,8 @@ test("exemplo.ts: exemploInicialForkJoin contains documentation comments", () =>
 });
 
 test("exemplo.ts: exemploInicialForkJoin is valid educational example", () => {
-  const tree = parser.parse(exemploInicialForkJoin);
-  const walked = treewalk(exemploInicialForkJoin, tree);
+  const tree = parser.parse(exampleForkJoin);
+  const walked = treewalk(exampleForkJoin, tree);
   const elements = resolve(walked.threads);
 
   const parseErrors = walked.errors.filter(

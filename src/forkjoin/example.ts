@@ -1,4 +1,4 @@
-export const exemploInicialForkJoin = `// Bem-vindo à ferramenta educacional para o aprendizado do modelo
+export const exampleForkJoin = `// Bem-vindo à ferramenta educacional para o aprendizado do modelo
 // de programação paralela fork-join! Esta é uma ferramenta interativa
 // onde você pode digitar seu código fork-join neste painel.
 //
