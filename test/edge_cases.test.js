@@ -1,6 +1,5 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { error } from "../out/error.js";
 import { parser } from "../out/forkJoinParser.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { checkSyntax } from "../out/forkjoin/syntax.js";
@@ -36,7 +35,7 @@ test("only comments", () => {
 test("FORK without label", () => {
   const code = "FORK ;";
   const tree = parser.parse(code);
-  const errors = error(tree);
+  const errors = checkSyntax(tree);
 
   assert.ok(errors.length > 0, "Should detect FORK without label as error");
 });
@@ -192,7 +191,7 @@ test("syntax error detection", () => {
 test("missing semicolons", () => {
   const code = "A B C";
   const tree = parser.parse(code);
-  const errors = error(tree);
+  const errors = checkSyntax(tree);
 
   assert.ok(errors.length > 0, "Should detect missing semicolons");
 });
