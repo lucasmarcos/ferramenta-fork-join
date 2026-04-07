@@ -1,14 +1,14 @@
 import type { Tree } from "@lezer/common";
 
-export interface SyntaxError {
+export interface GrammarError {
   type: "syntax-error" | "missing-semicolon";
   message: string;
   start: number;
   end: number;
 }
 
-export const checkSyntax = (tree: Tree): SyntaxError[] => {
-  const errors: SyntaxError[] = [];
+export const checkSyntax = (tree: Tree): GrammarError[] => {
+  const errors: GrammarError[] = [];
 
   const cursor = tree.cursor();
 

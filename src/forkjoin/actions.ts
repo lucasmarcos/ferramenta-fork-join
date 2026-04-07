@@ -1,23 +1,25 @@
 import type { Action } from "@codemirror/lint";
-import type { SyntaxError } from "./syntax.js";
+import type { GrammarError } from "./syntax.js";
 import type { TreewalkError } from "./treewalk.js";
 
-export const getActionsForError = (err: TreewalkError | SyntaxError): Action[] => {
+export const getActionsForError = (
+  err: TreewalkError | GrammarError,
+): Action[] => {
   const actions: Action[] = [];
 
-  if (err.type === "missing-semicolon") {
-    actions.push({
-      name: "Inserir",
-      apply(view, from, _to) {
-        view.dispatch({
-          changes: { from, insert: ";" },
-        });
-      },
-    });
-    return actions;
-  }
-
   switch (err.type) {
+    case "missing-semicolon": {
+      actions.push({
+        name: "Inserir",
+        apply(view, from, _to) {
+          view.dispatch({
+            changes: { from, insert: ";" },
+          });
+        },
+      });
+      break;
+    }
+
     case "fork-missing-label":
     case "join-missing-label": {
       const label = err.label;
