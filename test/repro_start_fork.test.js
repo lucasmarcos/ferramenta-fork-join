@@ -18,7 +18,6 @@ ROT_D:
   const elements = resolve(walked.threads);
 
   const nodes = elements.filter((e) => !e.data.source);
-  const _edges = elements.filter((e) => e.data.source);
 
   const nodeA = nodes.find((n) => n.data.label === "A");
   const nodeD = nodes.find((n) => n.data.label === "D");

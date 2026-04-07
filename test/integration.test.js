@@ -4,7 +4,6 @@ import { parser } from "../out/forkJoinParser.js";
 import { resolve } from "../out/forkjoin/resolve.js";
 import { treewalk } from "../out/forkjoin/treewalk.js";
 
-// Test the complete pipeline: parse -> treewalk -> resolve
 test("INTEGRATION: Simple sequential program", () => {
   const code = `
 A;
@@ -48,10 +47,8 @@ BRANCH:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // Should create 2 threads
   assert.ok(walked.threads.size >= 2, "Should have at least 2 threads");
 
-  // Main thread should have fork command
   const mainThread = walked.threads.get("0");
   const hasFork = mainThread.some((cmd) => cmd.forkTo);
   assert.ok(hasFork, "Main thread should have fork");
@@ -72,7 +69,6 @@ BRANCH:
     "Should have WORK",
   );
 
-  // Should have parallel edges from MAIN1
   const edges = elements.filter((e) => e.data.source && e.data.target);
   const main1Node = nodes.find((n) => n.data.label === "MAIN1");
   const main1Edges = edges.filter((e) => e.data.source === main1Node.data.id);
@@ -99,7 +95,6 @@ SYNC:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // Should create threads for main, T1, and VAR_J (sync point)
   assert.ok(walked.threads.size >= 3, "Should have at least 3 threads");
   assert.ok(walked.threads.has("VAR_J"), "Should have sync thread");
 
@@ -112,7 +107,6 @@ SYNC:
   assert.ok(labels.includes("BRANCH_WORK"), "Should have BRANCH_WORK");
   assert.ok(labels.includes("AFTER_SYNC"), "Should have AFTER_SYNC");
 
-  // Sync point should receive edges from both joining threads
   const syncNode = nodes.find((n) => n.data.label === "AFTER_SYNC");
   const edges = elements.filter((e) => e.data.source && e.data.target);
   const syncEdges = edges.filter((e) => e.data.target === syncNode?.data.id);
@@ -163,7 +157,6 @@ SYNC_B:
   const nodes = elements.filter((e) => e.data.id && e.data.label);
   const labels = nodes.map((n) => n.data.label);
 
-  // All nodes should be present
   const expectedNodes = [
     "INIT",
     "MIDDLE",
@@ -190,7 +183,6 @@ QUIT;
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // Should detect error
   assert.ok(walked.errors.length > 0, "Should detect FORK without label");
 });
 
@@ -213,18 +205,10 @@ SYNC:
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
 
-  // Variable should be tracked correctly
-  const _varWarning = walked.errors.find((e) =>
-    e.message.includes("variável de controle"),
-  );
-
-  // If count matches, no warning; if not, should have warning
-  // In this case, VAR_TEST = 2 and we have 2 JOINs, so should be valid
   const countMismatch = walked.errors.find((e) =>
     e.message.includes("não corresponde ao número de JOINs"),
   );
 
-  // With correct count, should not have mismatch error
   assert.ok(
     !countMismatch || walked.errors.length === 0,
     "Correct variable count should not produce error",
@@ -260,7 +244,6 @@ ROT_C4:
   assert.ok(labels.includes("C3"), "Should have C3");
   assert.ok(labels.includes("C4"), "Should have C4");
 
-  // Verify graph structure
   const edges = elements.filter((e) => e.data.source && e.data.target);
   assert.ok(edges.length > 0, "Should have edges connecting nodes");
 });

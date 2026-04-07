@@ -15,7 +15,6 @@ QUIT;
   const walked = treewalk(code, tree);
   const elements = resolve(walked.threads);
 
-  const _nodes = elements.filter((e) => e.data.id && e.data.label);
   const edges = elements.filter((e) => e.data.source && e.data.target);
 
   assert.strictEqual(
