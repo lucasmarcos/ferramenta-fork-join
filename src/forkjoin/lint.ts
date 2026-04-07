@@ -1,4 +1,4 @@
-import type { Action, Diagnostic } from "@codemirror/lint";
+import type { Diagnostic } from "@codemirror/lint";
 import { parser } from "../forkJoinParser.js";
 import { getActionsForError } from "./actions.js";
 import { checkSyntax } from "./syntax.js";
@@ -19,25 +19,12 @@ export const lintForkJoin = (code: string): LintResult => {
   if (syntaxErrors.length > 0) {
     hasErrors = true;
     for (const err of syntaxErrors) {
-      const actions: Action[] = [];
-
-      if (err.type === "missing-semicolon") {
-        actions.push({
-          name: "Inserir",
-          apply(view, from, _to) {
-            view.dispatch({
-              changes: { from, insert: ";" },
-            });
-          },
-        });
-      }
-
       diagnostics.push({
         message: err.message,
         severity: "error",
         from: err.start || 0,
         to: err.end || 0,
-        actions,
+        actions: getActionsForError(err),
       });
     }
   } else {
