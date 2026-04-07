@@ -21,4 +21,4 @@ BEGIN // begin sequencial
   P7; // chamada P7
 END // end sequencial
 ==>
-Program(Begin,Call(Label),ParBegin,Call(Label),Begin,Call(Label),Call(Label),ParBegin,Call(Label),Call(Label),ParEnd,End,ParEnd,Call(Label),End)
+Program(LineComment,Begin,LineComment,Call(Label),LineComment,ParBegin,LineComment,Call(Label),LineComment,Begin,LineComment,Call(Label),LineComment,Call(Label),LineComment,ParBegin,LineComment,Call(Label),LineComment,Call(Label),LineComment,ParEnd,LineComment,End,LineComment,ParEnd,LineComment,Call(Label),LineComment,End,LineComment)

@@ -9,4 +9,5 @@ export const forkJoinHighlight = styleTags({
   "Call/Label": tags.function(tags.labelName),
   "Fork/Label": tags.labelName,
   "Join/Label": tags.labelName,
+  LineComment: tags.lineComment,
 });

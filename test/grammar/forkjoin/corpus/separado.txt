@@ -5,4 +5,4 @@ VAR
 // comentario
 ;
 ==>
-Program(Assign(Label,Number))
+Program(Assign(Label,Number,LineComment))

@@ -12,10 +12,10 @@ ParEnd { @specialize<Label, "PAREND"> }
 
 Call { Label ";" }
 
-@skip { space | comment }
+@skip { space | LineComment }
 
 @tokens {
   space { @whitespace+ }
-  comment { "//" ![\n]* }
+  LineComment { "//" ![\n]* }
   Label { @asciiLetter (@asciiLetter | @digit | "_")* }
 }

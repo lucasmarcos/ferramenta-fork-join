@@ -6,4 +6,5 @@ export const parBeginParEndHighlight = styleTags({
   ParBegin: tags.controlKeyword,
   ParEnd: tags.controlKeyword,
   "Call/Label": tags.function(tags.labelName),
+  LineComment: tags.lineComment,
 });

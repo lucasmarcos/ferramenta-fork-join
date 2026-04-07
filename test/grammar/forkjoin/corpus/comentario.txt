@@ -4,4 +4,4 @@ FORK C2; // linha 2
 C3; // linha 3
 JOIN C2, C3, C4; // linha 4
 ==>
-Program(Call(Label),Fork(Label),Call(Label),Join(Label,Label,Label))
+Program(Call(Label),LineComment,Fork(Label),LineComment,Call(Label),LineComment,Join(Label,Label,Label),LineComment)

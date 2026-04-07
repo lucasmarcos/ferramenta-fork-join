@@ -12,11 +12,11 @@ Call { Label ";" }
 
 Def { Label ":" }
 
-@skip { space | comment }
+@skip { space | LineComment }
 
 @tokens {
   Label { (@asciiLetter | "_") (@asciiLetter | @digit | "_" | "'")* }
   Number { @digit+ }
   space { @whitespace+ }
-  comment { "//" ![\n]* }
+  LineComment { "//" ![\n]* }
 }
