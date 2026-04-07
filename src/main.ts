@@ -1,6 +1,5 @@
 import { indentWithTab } from "@codemirror/commands";
 import {
-  foldGutter,
   foldService,
   indentOnInput,
   LanguageSupport,
@@ -214,7 +213,6 @@ editor = new EditorView({
     languageConf.of(getLanguageSupport(currentMode)),
     lint,
     lintGutter(),
-    foldGutter(),
     foldBlocks,
     EditorView.updateListener.of((update) => {
       if (update.docChanged) go();
