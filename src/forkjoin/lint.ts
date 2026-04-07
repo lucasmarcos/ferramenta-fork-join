@@ -1,6 +1,6 @@
 import type { Diagnostic } from "@codemirror/lint";
-import { parser } from "../forkJoinParser.js";
 import { getActionsForError } from "./actions.js";
+import { parser } from "./parser.js";
 import { checkSyntax } from "./syntax.js";
 import { treewalk } from "./treewalk.js";
 
