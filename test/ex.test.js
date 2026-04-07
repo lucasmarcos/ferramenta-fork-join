@@ -1,4 +1,4 @@
-const code = `
+const _code = `
 A;
 FORK ROT_C;
 JOIN VAR_C, ROT_D, QUIT;

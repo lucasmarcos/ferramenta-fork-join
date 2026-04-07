@@ -1,4 +1,4 @@
-const code1 = `
+const _code1 = `
 var_F = 2;
 var_G = 2;
 var_H = 2;
@@ -29,7 +29,7 @@ ROT_H: H;
        QUIT;
 `;
 
-const code2 = `
+const _code2 = `
 var_E = 2;
 
 FORK ROT_C;
@@ -47,7 +47,7 @@ ROT_E: E;
 
 `;
 
-const code3 = `
+const _code3 = `
 var_R5 = 2;
 var_R6 = 2;
 var_R7 = 2;

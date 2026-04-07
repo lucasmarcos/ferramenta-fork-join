@@ -1,8 +1,8 @@
 import assert from "node:assert";
 import { test } from "node:test";
 import { parser } from "../out/forkjoin/parser.js";
-import { treewalk } from "../out/forkjoin/treewalk.js";
 import { resolve } from "../out/forkjoin/resolve.js";
+import { treewalk } from "../out/forkjoin/treewalk.js";
 
 const code = `
 VAR_H = 6;
@@ -43,7 +43,7 @@ ROT_H:
 test("borked", () => {
   const tree = parser.parse(code);
   const walked = treewalk(code, tree);
-  const elements = resolve(walked.threads);
+  const _elements = resolve(walked.threads);
 
   assert.ok(false, "should have edges d -> e and d -> g");
 });
