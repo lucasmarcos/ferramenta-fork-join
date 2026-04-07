@@ -1,2 +1,3 @@
 - quando uma sugestão de correção adiciona uma definição de váriavel no arquivo ela deve ir depois dos comentários iniciais
 - detectar código morto
+- algumas vezes o grafo não atualiza em resposta a edições no texto como apagar tudo ou colar
