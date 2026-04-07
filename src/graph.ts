@@ -32,6 +32,7 @@ export const renderGraph = (
           "text-valign": "center",
           width: "label",
           height: "label",
+          padding: "8px",
         },
       },
       {
