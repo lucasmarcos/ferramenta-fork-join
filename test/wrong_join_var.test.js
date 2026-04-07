@@ -63,16 +63,16 @@ ROT_R4: R4;
 
 ROT_R3: R3;
         FORK ROT_R6';
-JOIN var_R5, ROT_R5, QUIT;
+        JOIN var_R5, ROT_R5, QUIT;
 
 ROT_R5: R5;
-	JOIN var_R7, ROT_R7, QUIT;
+	      JOIN var_R7, ROT_R7, QUIT;
 
 ROT_R6: R6;
-	JOIN var_R7, ROT_R7, QUIT;
+	      JOIN var_R7, ROT_R7, QUIT;
 
 ROT_R6': JOIN var_R6, ROT_R6, QUIT;
 
 ROT_R7: R7;
-	QUIT;
+	      QUIT;
 `;
