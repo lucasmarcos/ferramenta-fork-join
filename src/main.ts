@@ -12,6 +12,7 @@ import type { NodePropSource, Tree } from "@lezer/common";
 import { basicSetup } from "codemirror";
 import { parser as forkJoinParser } from "./forkJoinParser.js";
 import { exemploInicialForkJoin } from "./forkjoin/exemplo.js";
+import { forkJoinHighlight } from "./forkjoin/highlight.js";
 import { resolve as resolveForkJoin } from "./forkjoin/resolve.js";
 import { checkSyntax as checkSyntaxForkJoin } from "./forkjoin/syntax.js";
 import {
@@ -20,9 +21,9 @@ import {
 } from "./forkjoin/treewalk.js";
 import type { GraphElement } from "./graph.js";
 import { renderGraph } from "./graph.js";
-import { forkJoinHighlight, parBeginParEndHighlight } from "./highlight.js";
 import { parser as parbeginParendParser } from "./parBeginParEndParser.js";
 import { exploInicialParbeginParend } from "./parbeginparend/exemplo.js";
+import { parBeginParEndHighlight } from "./parbeginparend/highlight.js";
 import { interpret as interpretParbeginParend } from "./parbeginparend/interpret.js";
 import { parse as parseParbeginParend } from "./parbeginparend/ir.js";
 import { stackify as stackifyParbeginParend } from "./parbeginparend/stack.js";

@@ -10,11 +10,3 @@ export const forkJoinHighlight = styleTags({
   "Fork/Label": tags.labelName,
   "Join/Label": tags.labelName,
 });
-
-export const parBeginParEndHighlight = styleTags({
-  Begin: tags.controlKeyword,
-  End: tags.controlKeyword,
-  ParBegin: tags.controlKeyword,
-  ParEnd: tags.controlKeyword,
-  "Call/Label": tags.function(tags.labelName),
-});
