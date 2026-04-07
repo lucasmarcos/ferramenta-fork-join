@@ -128,7 +128,7 @@ const lint = linter(
 
 const go = () => {
   const code = editor.state.doc.toString();
-  document.location.hash = encodeURI(code);
+  document.location.hash = encodeURIComponent(currentMode) + "|" + encodeURIComponent(code);
   if (!code) return;
 
   let elements: GraphElement[] = [];
@@ -151,8 +151,28 @@ const go = () => {
   }
 };
 
-const initialCode =
-  decodeURI(document.location.hash.substring(1)) || exampleForkJoin;
+const parseHash = (): { mode: Mode; code: string } => {
+  const hash = document.location.hash.substring(1);
+  if (!hash) return { mode: "fork-join", code: exampleForkJoin };
+
+  const pipeIndex = hash.indexOf("|");
+  if (pipeIndex === -1) {
+    return { mode: "fork-join", code: decodeURIComponent(hash) };
+  }
+
+  const mode = decodeURIComponent(hash.substring(0, pipeIndex)) as Mode;
+  const code = decodeURIComponent(hash.substring(pipeIndex + 1));
+
+  if (mode !== "fork-join" && mode !== "parbegin-parend") {
+    return { mode: "fork-join", code };
+  }
+
+  return { mode, code };
+};
+
+const initial = parseHash();
+currentMode = initial.mode;
+modeSelect.value = currentMode;
 
 editor = new EditorView({
   extensions: [
@@ -171,7 +191,7 @@ editor = new EditorView({
     }),
   ],
   parent: editorViewElement,
-  doc: initialCode,
+  doc: initial.code,
 });
 
 modeSelect.onchange = () => {
