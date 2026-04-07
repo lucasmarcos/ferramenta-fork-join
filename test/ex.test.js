@@ -1,3 +1,4 @@
+const code = `
 A;
 FORK ROT_C;
 JOIN VAR_C, ROT_D, QUIT;
@@ -8,4 +9,4 @@ ROT_C:
 
 ROT_D:
   D;
-
+`;
