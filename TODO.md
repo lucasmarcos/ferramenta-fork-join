@@ -2,3 +2,4 @@
 - detectar código morto
 - algumas vezes o grafo não atualiza em resposta a edições no texto como apagar tudo ou colar
 - o fold de blocos tá funcionando mesmo dentro de comentários
+- labels com só um caractere deveriam ser circulares ainda
