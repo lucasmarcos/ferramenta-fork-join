@@ -14,7 +14,7 @@ export const renderGraph = (
     layout: { name: "dagre" },
     style: [
       {
-        selector: "node",
+        selector: "node[width]",
         style: {
           label: "data(label)",
           shape: "ellipse",
@@ -23,6 +23,18 @@ export const renderGraph = (
           "text-halign": "center",
           "text-valign": "center",
           width: "data(width)",
+          padding: "8px",
+        },
+      },
+      {
+        selector: "node",
+        style: {
+          label: "data(label)",
+          shape: "ellipse",
+          "background-color": "white",
+          "border-width": 1,
+          "text-halign": "center",
+          "text-valign": "center",
           padding: "8px",
         },
       },
