@@ -56,7 +56,7 @@ export const resolve = (
         elements.nodes.push({
           data: {
             id: command.id,
-            label: command.label,
+            label: command.label.replace(/^@/, ""),
           },
         });
 
