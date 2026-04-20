@@ -23,6 +23,6 @@
     "bundle": "bun build --minify --outfile=web/main.js out/main.js",
     "lint": "biome check --write --unsafe biome.json package.json tsconfig.json src test",
     "test": "bun test",
-    "build": "bun run build:css && bun run build:js && bun run build:lezer && bun run bundle"
+    "build": "bun run build:css && bun run build:lezer && bun run build:js && bun run bundle"
   }
 }
