@@ -22,13 +22,21 @@ export const resolve = (
             const nextLead = threads.get(lead.joinOn)?.[0];
             if (latest && nextLead?.id) {
               elements.edges.push({
-                data: { source: latest, target: nextLead.id },
+                data: {
+                  id: `${latest}#${nextLead.id}`,
+                  source: latest,
+                  target: nextLead.id,
+                },
               });
             }
           } else {
             if (latest && lead.id) {
               elements.edges.push({
-                data: { source: latest, target: lead.id },
+                data: {
+                  id: `${latest}#${lead.id}`,
+                  source: latest,
+                  target: lead.id,
+                },
               });
             }
           }
@@ -36,7 +44,13 @@ export const resolve = (
       } else if (command.joinOn) {
         const lead = threads.get(command.joinOn)?.[0];
         if (latest && lead?.id) {
-          elements.edges.push({ data: { source: latest, target: lead.id } });
+          elements.edges.push({
+            data: {
+              id: `${latest}#${lead.id}`,
+              source: latest,
+              target: lead.id,
+            },
+          });
         }
       } else if (command.label) {
         elements.nodes.push({
@@ -47,7 +61,13 @@ export const resolve = (
         });
 
         if (latest && command.id) {
-          elements.edges.push({ data: { source: latest, target: command.id } });
+          elements.edges.push({
+            data: {
+              id: `${latest}#${command.id}`,
+              source: latest,
+              target: command.id,
+            },
+          });
         }
 
         latest = command.id;
