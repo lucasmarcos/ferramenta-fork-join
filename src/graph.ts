@@ -22,6 +22,7 @@ export const renderGraph = (
           "border-width": 1,
           "text-halign": "center",
           "text-valign": "center",
+          width: "data(width)",
           padding: "8px",
         },
       },
