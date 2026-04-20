@@ -226,6 +226,11 @@ const compare = (
       `${result.nodes.find((n) => n.data.id === e.data.source)?.data.label}:${result.nodes.find((n) => n.data.id === e.data.target)?.data.label}`,
   );
 
+  solutionNodes.sort();
+  solutionEdges.sort();
+  resultNodes.sort();
+  resultEdges.sort();
+
   return (
     solutionNodes.length === resultNodes.length &&
     solutionEdges.length === resultEdges.length &&
