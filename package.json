@@ -10,6 +10,7 @@
     "@types/node": "^25.6.0",
     "@typescript/native-preview": "^7.0.0-dev.20260419.1",
     "codemirror": "^6.0.2",
+    "concurrently": "^9.2.1",
     "cytoscape": "^3.33.2",
     "cytoscape-dagre": "^2.5.0"
   },
@@ -18,7 +19,8 @@
     "build:css": "tailwindcss -i src/index.css -o web/index.css",
     "build:js": "tsgo",
     "watch:js": "tsgo --watch",
-    "watch": "bun build --watch --outfile=web/main.js out/main.js",
+    "watch:bundle": "bun build --watch --outfile=web/main.js out/main.js",
+    "watch": "concurrently  \"bun watch:js\" \"bun watch:bundle\"",
     "bundle": "bun build --minify --outfile=web/main.js out/main.js",
     "lint": "biome check --write --unsafe biome.json package.json tsconfig.json src test",
     "test": "bun test",
