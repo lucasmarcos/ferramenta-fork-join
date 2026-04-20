@@ -11,15 +11,14 @@
     "@typescript/native-preview": "^7.0.0-dev.20260419.1",
     "codemirror": "^6.0.2",
     "cytoscape": "^3.33.2",
-    "cytoscape-dagre": "^2.5.0",
-    "esbuild": "^0.28.0"
+    "cytoscape-dagre": "^2.5.0"
   },
   "scripts": {
     "build:lezer": "lezer-generator src/lezer/forkjoin.grammar -o out/forkjoin/parser.js && lezer-generator src/lezer/parbeginparend.grammar -o out/parbeginparend/parser.js",
     "build:css": "tailwindcss -i src/index.css -o web/index.css",
     "build:js": "tsgo",
     "watch:js": "tsgo --watch",
-    "watch": "esbuild --watch --bundle out/main.js --outfile=web/main.js",
+    "watch": "bun build --watch --outfile=web/main.js out/main.js",
     "bundle": "bun build --minify --outfile=web/main.js out/main.js",
     "lint": "biome check --write --unsafe biome.json package.json tsconfig.json src test",
     "test": "bun test",
