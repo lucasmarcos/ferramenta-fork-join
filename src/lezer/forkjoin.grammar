@@ -8,14 +8,18 @@ Join { @specialize<Label, "JOIN"> Label "," Label "," Label ";" }
 
 Assign { Label "=" Number ";" }
 
-Call { Label ";" }
-
 Def { Label ":" }
 
+Call { (Label | AdvancedCall) ";" }
+
 @skip { space | LineComment }
+@skip { } {
+  AdvancedCall { "@" LabelAdvanced }
+}
 
 @tokens {
   Label { (@asciiLetter | "_") (@asciiLetter | @digit | "_" | "'")* }
+  LabelAdvanced { ![;]+ }
   Number { @digit+ }
   space { @whitespace+ }
   LineComment { "//" ![\n]* }
