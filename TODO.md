@@ -4,3 +4,4 @@
 - o fold de blocos tá funcionando mesmo dentro de comentários
 - labels com só um caractere deveriam ser circulares ainda
 - as variáveis só podem ser definidas no início do arquivo
+- manter posição do grafo ao atualizar
