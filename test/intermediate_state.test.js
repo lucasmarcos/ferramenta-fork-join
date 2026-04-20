@@ -127,27 +127,6 @@ TARGET:
   );
 });
 
-test("INTERNAL: Thread IDs are UUIDs for FORK", () => {
-  const code = `
-A;
-FORK B;
-QUIT;
-
-B:
-  C;
-  QUIT;
-`;
-
-  const tree = parser.parse(code);
-  const walked = treewalk(code, tree);
-
-  const mainThread = walked.threads.get("0");
-  const forkCmd = mainThread.find((cmd) => cmd.forkTo);
-
-  assert.strictEqual(forkCmd.forkTo.length, 36, "Should be UUID format");
-  assert.ok(forkCmd.forkTo.includes("-"), "UUID should contain dashes");
-});
-
 test("INTERNAL: joinOn references control variable name", () => {
   const code = `CTRL_VAR = 1;
 

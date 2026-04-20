@@ -40,6 +40,7 @@ interface Context {
   variables: Map<string, number>;
   variableDefs: Map<string, { start: number; end: number; value: number }>;
   joinCounts: Map<string, number>;
+  calls: Map<string, number>;
   threads: Map<string, Command[]>;
   errors: IError[];
   currentThread: string;
@@ -88,7 +89,7 @@ const parseBlocks = (doc: string, tree: Tree): Map<string, ParsedCommand[]> => {
 };
 
 const getLabel = (cmd: ParsedCommand, index = 0): string | undefined => {
-  const labels = cmd.children.filter((c) => c.name === "Label");
+  const labels = cmd.children.filter((c) => c.name === "Label" || c.name == "AdvancedCall");
   return labels[index]?.text;
 };
 
@@ -145,8 +146,15 @@ const executeBlock = (ctx: Context, blockName: string, depth = 0): void => {
         if (ctx.blocks.has(label)) {
           executeBlock(ctx, label, depth + 1);
         } else {
+          let numberOfCalls = ctx.calls.get(label);
+          if (!numberOfCalls) {
+            numberOfCalls = 0;
+          }
+          numberOfCalls += 1;
+          ctx.calls.set(label, numberOfCalls);
+
           ctx.threads.get(ctx.currentThread)?.push({
-            id: crypto.randomUUID(),
+            id: `${label}\$${numberOfCalls}`,
             label,
           });
         }
@@ -158,9 +166,8 @@ const executeBlock = (ctx: Context, blockName: string, depth = 0): void => {
         if (!label) break;
 
         if (ctx.blocks.has(label)) {
-          const id = crypto.randomUUID();
-          ctx.threads.get(ctx.currentThread)?.push({ forkTo: id });
-          ctx.threads.set(id, [{ fork: label }]);
+          ctx.threads.get(ctx.currentThread)?.push({ forkTo: label });
+          ctx.threads.set(label, [{ fork: label }]);
         } else {
           ctx.errors.push({
             type: "fork-missing-label",
@@ -277,6 +284,7 @@ export const treewalk = (doc: string, tree: Tree) => {
     variables: new Map(),
     variableDefs: new Map(),
     joinCounts: new Map(),
+    calls: new Map(),
     threads: new Map([["0", []]]),
     errors: [],
     currentThread: "0",
