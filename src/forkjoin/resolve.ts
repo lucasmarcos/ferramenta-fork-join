@@ -53,10 +53,16 @@ export const resolve = (
           });
         }
       } else if (command.label) {
+        let width = 0;
+        if (command.label.length > 3) {
+          width = 10 * command.label.length;
+        }
+
         elements.nodes.push({
           data: {
             id: command.id,
             label: command.label.replace(/^@/, ""),
+            width: width !== 0 ? width : undefined,
           },
         });
 
