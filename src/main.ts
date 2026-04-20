@@ -56,13 +56,91 @@ const solutionCode = [
 
   ROT_C: C;
 `,
+  `
+  VAR_D = 2;
+
+  A;
+  FORK ROT_C;
+  B;
+  JOIN VAR_D, ROT_D, QUIT;
+
+  ROT_C:
+    C;
+    JOIN VAR_D, ROT_D, QUIT;
+
+  ROT_D:
+    D;
+`,
+  `
+VAR_A = 2;
+VAR_B = 3;
+VAR_C = 2;
+VAR_D = 4;
+
+START;
+LOAD_DATA;
+FORK WORKER_A1;
+PROCESS_MAIN;
+JOIN VAR_A, STAGE_3, QUIT;
+
+WORKER_A1:
+  PROCESS_A1;
+  JOIN VAR_A, STAGE_3, QUIT;
+
+STAGE_3:
+  COMBINE_A;
+  FORK WORKER_B1;
+  FORK WORKER_B2;
+  PROCESS_B_MAIN;
+  JOIN VAR_B, STAGE_4, QUIT;
+
+WORKER_B1:
+  TASK_B1_1;
+  TASK_B1_2;
+  JOIN VAR_B, STAGE_4, QUIT;
+
+WORKER_B2:
+  TASK_B2_1;
+  JOIN VAR_B, STAGE_4, QUIT;
+
+STAGE_4:
+  AGGREGATE_B;
+  FORK NESTED_PATH;
+  DIRECT_PATH;
+  JOIN VAR_C, STAGE_5, QUIT;
+
+NESTED_PATH:
+  NESTED_1;
+  FORK DEEP_1;
+  FORK DEEP_2;
+  FORK DEEP_3;
+  NESTED_2;
+  JOIN VAR_D, NESTED_MERGE, QUIT;
+
+DEEP_1:
+  DEEP_TASK_1;
+  JOIN VAR_D, NESTED_MERGE, QUIT;
+
+DEEP_2:
+  DEEP_TASK_2;
+  JOIN VAR_D, NESTED_MERGE, QUIT;
+
+DEEP_3:
+  DEEP_TASK_3;
+  JOIN VAR_D, NESTED_MERGE, QUIT;
+
+NESTED_MERGE:
+  NESTED_DONE;
+  JOIN VAR_C, STAGE_5, QUIT;
+
+STAGE_5:
+  FINALIZE;
+  SAVE_RESULTS;
+  QUIT;
+`,
 ];
 
 const level = parseHash();
-const parsed = forkJoinParser.parse(solutionCode[level - 1]);
-const threads = treewalkForkJoin(solutionCode[level - 1], parsed);
-const resolved = resolveForkJoin(threads.threads);
-renderGraph(solutionContainer, resolved);
 
 const getModeData = (mode: Mode) => {
   if (mode === "fork-join") {
@@ -126,6 +204,8 @@ const lint = linter(
   },
   { autoPanel: true },
 );
+
+let resolved: ElementsDefinition = { nodes: [], edges: [] };
 
 const compare = (
   solution: ElementsDefinition,
@@ -248,4 +328,35 @@ editor = new EditorView({
   parent: editorViewElement,
 });
 
-go();
+const goToLevel = (level: number) => {
+  const parsed = forkJoinParser.parse(solutionCode[level - 1]);
+  const threads = treewalkForkJoin(solutionCode[level - 1], parsed);
+  resolved = resolveForkJoin(threads.threads);
+  renderGraph(solutionContainer, resolved);
+  go();
+};
+
+addEventListener("hashchange", (_event) => {
+  location.reload();
+});
+
+if (level !== 0) {
+  goToLevel(level);
+} else {
+  document.body.innerHTML = `
+    <ul>
+      <li>
+        <a href="#1">fase 1</a>
+      </li>
+      <li>
+        <a href="#2">fase 2</a>
+      </li>
+      <li>
+        <a href="#3">fase 3</a>
+      </li>
+      <li>
+        <a href="#4">fase 4</a>
+      </li>
+    </ul>
+  `;
+}
