@@ -22,8 +22,6 @@ export const renderGraph = (
           "border-width": 1,
           "text-halign": "center",
           "text-valign": "center",
-          width: "label",
-          height: "label",
           padding: "8px",
         },
       },
