@@ -89,7 +89,9 @@ const parseBlocks = (doc: string, tree: Tree): Map<string, ParsedCommand[]> => {
 };
 
 const getLabel = (cmd: ParsedCommand, index = 0): string | undefined => {
-  const labels = cmd.children.filter((c) => c.name === "Label" || c.name == "AdvancedCall");
+  const labels = cmd.children.filter(
+    (c) => c.name === "Label" || c.name === "AdvancedCall",
+  );
   return labels[index]?.text;
 };
 
@@ -154,7 +156,7 @@ const executeBlock = (ctx: Context, blockName: string, depth = 0): void => {
           ctx.calls.set(label, numberOfCalls);
 
           ctx.threads.get(ctx.currentThread)?.push({
-            id: `${label}\$${numberOfCalls}`,
+            id: `${label}$${numberOfCalls}`,
             label,
           });
         }
