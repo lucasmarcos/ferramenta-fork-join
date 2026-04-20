@@ -223,7 +223,7 @@ const compare = (
       `${result.nodes.find((n) => n.data.id === e.data.source)?.data.label}:${result.nodes.find((n) => n.data.id === e.data.target)?.data.label}`,
   );
 
-  console.log(solution);
+  console.log(solutionEdges);
   console.log(resultEdges);
 
   return (
