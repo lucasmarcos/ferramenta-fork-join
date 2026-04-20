@@ -11,6 +11,7 @@ import { EditorView, keymap } from "@codemirror/view";
 import type { NodePropSource, Tree } from "@lezer/common";
 import { basicSetup } from "codemirror";
 import type { ElementsDefinition } from "cytoscape";
+import type { DagreLayoutOptions } from "cytoscape-dagre";
 import { forkJoinHighlight } from "./forkjoin/highlight.js";
 import { lintForkJoin } from "./forkjoin/lint.js";
 import { parser as forkJoinParser } from "./forkjoin/parser.js";
@@ -140,6 +141,8 @@ STAGE_5:
 `,
 ];
 
+const cyto = renderGraph(resultContainer, { nodes: [], edges: [] });
+
 const level = parseHash();
 
 const getModeData = (mode: Mode) => {
@@ -223,9 +226,6 @@ const compare = (
       `${result.nodes.find((n) => n.data.id === e.data.source)?.data.label}:${result.nodes.find((n) => n.data.id === e.data.target)?.data.label}`,
   );
 
-  console.log(solutionEdges);
-  console.log(resultEdges);
-
   return (
     solutionNodes.length === resultNodes.length &&
     solutionEdges.length === resultEdges.length &&
@@ -257,14 +257,13 @@ const go = () => {
 
   if (compare(resolved, elements)) {
     resultContainer.style.border = "solid green";
-    console.log("right!");
   } else {
     resultContainer.style.border = "solid red";
-    console.log("wrong!");
   }
 
   if (elements.nodes.length > 0) {
-    renderGraph(resultContainer, elements);
+    cyto.json({ elements });
+    cyto.layout({ name: "dagre", animate: true } as DagreLayoutOptions).run();
   }
 };
 
