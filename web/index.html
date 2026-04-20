@@ -9,19 +9,15 @@
   </head>
   <body>
     <div class="flex flex-col h-screen">
-      <header>
-        <label for="mode-select">Modo:</label>
-        <select id="mode-select">
-          <option value="fork-join">Fork-Join</option>
-          <option value="parbegin-parend">PARBEGIN/PAREND</option>
-        </select>
-      </header>
-
       <main class="flex-1 flex md:flex-row flex-col overflow-hidden">
         <div id="editor" class="flex-1"></div>
-        <div id="graph" class="flex-1"></div>
+        <div id="graphs" class="flex-1 flex flex-col">
+          <div id="solution" class="flex-1"></div>
+          <div id="result" class="flex-1"></div>
+        </div>
       </main>
     </div>
+
     <script src="./main.js"></script>
   </body>
 </html>
