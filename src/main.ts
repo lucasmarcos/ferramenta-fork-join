@@ -11,14 +11,12 @@ import { EditorView, keymap } from "@codemirror/view";
 import type { NodePropSource, Tree } from "@lezer/common";
 import { basicSetup } from "codemirror";
 import type { ElementsDefinition } from "cytoscape";
-import { exampleForkJoin } from "./forkjoin/example.js";
 import { forkJoinHighlight } from "./forkjoin/highlight.js";
 import { lintForkJoin } from "./forkjoin/lint.js";
 import { parser as forkJoinParser } from "./forkjoin/parser.js";
 import { resolve as resolveForkJoin } from "./forkjoin/resolve.js";
 import { treewalk as treewalkForkJoin } from "./forkjoin/treewalk.js";
 import { renderGraph } from "./graph.js";
-import { exampleParbeginParend } from "./parbeginparend/example.js";
 import { parBeginParEndHighlight } from "./parbeginparend/highlight.js";
 import { interpret as interpretParbeginParend } from "./parbeginparend/interpret.js";
 import { parse as parseParbeginParend } from "./parbeginparend/ir.js";
@@ -27,42 +25,56 @@ import { parser as parbeginParendParser } from "./parbeginparend/parser.js";
 import { stackify as stackifyParbeginParend } from "./parbeginparend/stack.js";
 
 type Mode = "fork-join" | "parbegin-parend";
-let currentMode: Mode = "fork-join";
+const currentMode: Mode = "fork-join";
 
 const editorViewElement = document.getElementById("editor") as HTMLElement;
-const graphContainer = document.getElementById("graph") as HTMLElement;
-const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
+const solutionContainer = document.getElementById("solution") as HTMLElement;
+const resultContainer = document.getElementById("result") as HTMLElement;
 
 let editor: EditorView;
 const languageConf = new Compartment();
 
 let lastLintHadErrors = false;
 
+const parseHash = (): number => {
+  const hash = document.location.hash.substring(1);
+  if (!hash) return 0;
+  return parseInt(hash, 10);
+};
+
+const solutionCode = [
+  `
+  A;
+  B;
+  C;
+`,
+
+  `
+  A;
+  FORK ROT_C;
+  B;
+
+  ROT_C: C;
+`,
+];
+
+const level = parseHash();
+const parsed = forkJoinParser.parse(solutionCode[level - 1]);
+const threads = treewalkForkJoin(solutionCode[level - 1], parsed);
+const resolved = resolveForkJoin(threads.threads);
+renderGraph(solutionContainer, resolved);
+
 const getModeData = (mode: Mode) => {
   if (mode === "fork-join") {
     return {
       parser: forkJoinParser,
-      example: exampleForkJoin,
       name: "fork-join",
     };
   }
   return {
     parser: parbeginParendParser,
-    example: exampleParbeginParend,
     name: "parbegin-parend",
   };
-};
-
-const switchMode = (mode: Mode) => {
-  currentMode = mode;
-  const data = getModeData(mode);
-
-  editor.dispatch({
-    effects: languageConf.reconfigure(getLanguageSupport(mode)),
-    changes: { from: 0, to: editor.state.doc.length, insert: data.example },
-  });
-
-  go();
 };
 
 const getLanguageSupport = (mode: Mode) => {
@@ -115,9 +127,35 @@ const lint = linter(
   { autoPanel: true },
 );
 
+const compare = (
+  solution: ElementsDefinition,
+  result: ElementsDefinition,
+): boolean => {
+  const solutionNodes = solution.nodes.map((n) => n.data.label);
+  const resultNodes = result.nodes.map((n) => n.data.label);
+
+  const solutionEdges = solution.edges.map(
+    (e) =>
+      `${solution.nodes.find((n) => n.data.id === e.data.source)?.data.label}:${solution.nodes.find((n) => n.data.id === e.data.target)?.data.label}`,
+  );
+  const resultEdges = result.edges.map(
+    (e) =>
+      `${result.nodes.find((n) => n.data.id === e.data.source)?.data.label}:${result.nodes.find((n) => n.data.id === e.data.target)?.data.label}`,
+  );
+
+  console.log(solution);
+  console.log(resultEdges);
+
+  return (
+    solutionNodes.length === resultNodes.length &&
+    solutionEdges.length === resultEdges.length &&
+    solutionNodes.every((val, index) => val === resultNodes[index]) &&
+    solutionEdges.every((val, index) => val === resultEdges[index])
+  );
+};
+
 const go = () => {
   const code = editor.state.doc.toString();
-  document.location.hash = `${encodeURIComponent(currentMode)}|${encodeURIComponent(code)}`;
   if (!code) return;
 
   let elements: ElementsDefinition = { nodes: [], edges: [] };
@@ -137,28 +175,17 @@ const go = () => {
     }
   }
 
+  if (compare(resolved, elements)) {
+    resultContainer.style.border = "solid green";
+    console.log("right!");
+  } else {
+    resultContainer.style.border = "solid red";
+    console.log("wrong!");
+  }
+
   if (elements.nodes.length > 0) {
-    renderGraph(graphContainer, elements);
+    renderGraph(resultContainer, elements);
   }
-};
-
-const parseHash = (): { mode: Mode; code: string } => {
-  const hash = document.location.hash.substring(1);
-  if (!hash) return { mode: "fork-join", code: exampleForkJoin };
-
-  const pipeIndex = hash.indexOf("|");
-  if (pipeIndex === -1) {
-    return { mode: "fork-join", code: decodeURIComponent(hash) };
-  }
-
-  const mode = decodeURIComponent(hash.substring(0, pipeIndex)) as Mode;
-  const code = decodeURIComponent(hash.substring(pipeIndex + 1));
-
-  if (mode !== "fork-join" && mode !== "parbegin-parend") {
-    return { mode: "fork-join", code };
-  }
-
-  return { mode, code };
 };
 
 const foldBlocks = foldService.of((state, from, _to) => {
@@ -185,10 +212,6 @@ const foldBlocks = foldService.of((state, from, _to) => {
 
   return { from: line.to, to: foldEnd - 1 };
 });
-
-const initial = parseHash();
-currentMode = initial.mode;
-modeSelect.value = currentMode;
 
 const insertNewlineAndIndent = (view: EditorView): boolean => {
   const { state } = view;
@@ -223,11 +246,6 @@ editor = new EditorView({
     }),
   ],
   parent: editorViewElement,
-  doc: initial.code,
 });
-
-modeSelect.onchange = () => {
-  switchMode(modeSelect.value as Mode);
-};
 
 go();
