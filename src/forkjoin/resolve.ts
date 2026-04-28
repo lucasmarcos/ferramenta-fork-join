@@ -39,12 +39,22 @@ export const resolve = (
           elements.edges.push({ data: { source: latest, target: lead.id } });
         }
       } else if (command.label) {
-        elements.nodes.push({
-          data: {
-            id: command.id,
-            label: command.label,
-          },
-        });
+        if (command.label.length > 2) {
+          elements.nodes.push({
+            data: {
+              id: command.id,
+              label: command.label,
+              width: command.label.length * 12,
+            },
+          });
+        } else {
+          elements.nodes.push({
+            data: {
+              id: command.id,
+              label: command.label,
+            },
+          });
+        }
 
         if (latest && command.id) {
           elements.edges.push({ data: { source: latest, target: command.id } });

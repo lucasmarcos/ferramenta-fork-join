@@ -88,6 +88,18 @@ const parseBlocks = (doc: string, tree: Tree): Map<string, ParsedCommand[]> => {
 };
 
 const getLabel = (cmd: ParsedCommand, index = 0): string | undefined => {
+  if (cmd.name === "Call") {
+    for (const c of cmd.children) {
+      if (c.name === "Label") {
+        return c.text;
+      } else if (c.name === "ComplexLabel") {
+        return c.text.slice(2, -1);
+      } else {
+        return undefined;
+      }
+    }
+  }
+
   const labels = cmd.children.filter((c) => c.name === "Label");
   return labels[index]?.text;
 };
