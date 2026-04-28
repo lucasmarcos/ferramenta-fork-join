@@ -1,5 +1,14 @@
 @top Program { command* }
 
+@skip { space | LineComment }
+
+@tokens {
+  Label { (@asciiLetter | "_") (@asciiLetter | @digit | "_" | "'")* }
+  Number { @digit+ }
+  space { @whitespace+ }
+  LineComment { "//" ![\n]* }
+}
+
 command { Fork | Join | Assign | Call | Def }
 
 Fork { @specialize<Label, "FORK"> Label ";" }
@@ -12,12 +21,12 @@ Call { (Label | ComplexLabel) ";" }
 
 Def { Label ":" }
 
-@skip { space | LineComment }
+@local tokens {
+  stringDelimiter { '"' }
+  stringEscape { "\\" _ }
+  @else stringContent
+}
 
-@tokens {
-  Label { (@asciiLetter | "_") (@asciiLetter | @digit | "_" | "'")* }
-  ComplexLabel { "@" "\"" ![\n]+ "\"" }
-  Number { @digit+ }
-  space { @whitespace+ }
-  LineComment { "//" ![\n]* }
+@skip {} {
+  ComplexLabel { "@" stringDelimiter (stringContent | stringEscape)+ stringDelimiter }
 }

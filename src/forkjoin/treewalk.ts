@@ -93,7 +93,7 @@ const getLabel = (cmd: ParsedCommand, index = 0): string | undefined => {
       if (c.name === "Label") {
         return c.text;
       } else if (c.name === "ComplexLabel") {
-        return c.text.slice(2, -1);
+        return c.text.slice(2, -1).replace(/\\/g, "");
       } else {
         return undefined;
       }

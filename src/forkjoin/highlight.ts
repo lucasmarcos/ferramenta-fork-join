@@ -7,6 +7,7 @@ export const forkJoinHighlight = styleTags({
   "Assign/Label": tags.definition(tags.variableName),
   "Assign/Number": tags.number,
   "Call/Label": tags.function(tags.labelName),
+  "Call/ComplexLabel": tags.string,
   "Fork/Label": tags.labelName,
   "Join/Label": tags.labelName,
   LineComment: tags.lineComment,
