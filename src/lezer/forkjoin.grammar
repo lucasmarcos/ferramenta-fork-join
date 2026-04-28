@@ -8,7 +8,7 @@ Join { @specialize<Label, "JOIN"> Label "," Label "," Label ";" }
 
 Assign { Label "=" Number ";" }
 
-Call { Label ";" }
+Call { (Label | ComplexLabel) ";" }
 
 Def { Label ":" }
 
@@ -16,6 +16,7 @@ Def { Label ":" }
 
 @tokens {
   Label { (@asciiLetter | "_") (@asciiLetter | @digit | "_" | "'")* }
+  ComplexLabel { "@" "\"" ![\n]+ "\"" }
   Number { @digit+ }
   space { @whitespace+ }
   LineComment { "//" ![\n]* }

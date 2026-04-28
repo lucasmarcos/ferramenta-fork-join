@@ -2,3 +2,7 @@
 /web/*
 !/web/index.html
 /out/
+/src/parbeginparend/parser.terms.ts
+/src/parbeginparend/parser.ts
+/src/forkjoin/parser.terms.ts
+/src/forkjoin/parser.ts

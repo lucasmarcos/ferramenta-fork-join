@@ -15,7 +15,7 @@
     "esbuild": "^0.28.0"
   },
   "scripts": {
-    "build:lezer": "lezer-generator src/lezer/forkjoin.grammar -o out/forkjoin/parser.js && lezer-generator src/lezer/parbeginparend.grammar -o out/parbeginparend/parser.js",
+    "build:lezer": "lezer-generator --typeScript src/lezer/forkjoin.grammar -o src/forkjoin/parser.ts && lezer-generator --typeScript src/lezer/parbeginparend.grammar -o src/parbeginparend/parser.ts",
     "build:css": "tailwindcss -i src/index.css -o web/index.css",
     "build:js": "tsgo",
     "watch:js": "tsgo --watch",
@@ -23,6 +23,9 @@
     "bundle": "esbuild --bundle --minify out/main.js --outfile=web/main.js",
     "lint": "biome check --write --unsafe biome.json package-lock.json package.json tsconfig.json src test",
     "test": "node --test",
-    "build": "node --run build:css && node --run build:js && node --run build:lezer && node --run bundle"
+    "build": "node --run build:lezer && node --run build:css && node --run build:js && node --run bundle"
+  },
+  "overrides": {
+    "@lezer/lr": "^1.4.10"
   }
 }
