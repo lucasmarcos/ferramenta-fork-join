@@ -1,6 +1,4 @@
-export const exampleParbeginParend = `// Bem-vindo
-
-BEGIN
+export const exampleParbeginParend = `BEGIN
   A;
   PARBEGIN
     BEGIN
